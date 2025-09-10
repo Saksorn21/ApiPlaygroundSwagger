@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { ChevronRight, LockKeyhole } from "lucide-react";
+import { OpenAPISpec } from "@/types/openapi";
+import { SwaggerSpec } from "@/types/swaggerSpec";
 
 interface SidebarProps {
-  spec: any;
+  spec: OpenAPISpec | SwaggerSpec | null | undefined;
   groups?: Record<string, string>;
   onSelect: (item: { path: string; method: string }) => void;
   theme?: "dark" | "light";
@@ -11,9 +13,69 @@ interface SidebarProps {
   error?: string | null;
 }
 
+type TagGroup = {
+  key: string;
+  name: string;
+  description?: string;
+};
+const safeKey = (tag: string) => String(tag).replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+const groupSpec = (spec: any) => {
+  if (!spec || !spec.paths || typeof spec.paths !== "object") {
+    return { groupedPaths: {}, ungroupedPaths: [], tagsMeta: {} };
+  }
+
+  // 1. เก็บ meta ของ tags
+  const tagsMeta: Record<string, TagGroup> = {};
+  if (Array.isArray(spec.tags)) {
+    spec.tags.forEach((tag: any) => {
+      if (!tag?.name) return;
+      const safeKeyName = safeKey(tag.name)
+      tagsMeta[safeKeyName] = {
+        key: safeKeyName,
+        name: String(tag.name),
+        description: tag.description || "",
+      };
+    });
+  }
+
+  // 2. แบ่งกลุ่ม paths
+  const groupedPaths: Record<string, string[]> = {};
+  const ungroupedPaths: string[] = [];
+
+  Object.keys(spec.paths || {}).forEach((path) => {
+    const pathItem = spec.paths?.[path];
+    if (!pathItem || typeof pathItem !== "object") {
+      ungroupedPaths.push(path);
+      return;
+    }
+
+    const methods = Object.keys(pathItem);
+    let grouped = false;
+
+    methods.forEach((method) => {
+      const op = pathItem?.[method];
+      if (!op) return;
+
+      const opTags: string[] = Array.isArray(op.tags) ? op.tags : [];
+      if (opTags.length > 0) {
+        const safeKeyName = safeKey(opTags[0])
+        if (!groupedPaths[safeKeyName]) groupedPaths[safeKeyName] = [];
+        if (!groupedPaths[safeKeyName].includes(path)) groupedPaths[safeKeyName].push(path);
+        grouped = true;
+      }
+    });
+
+    if (!grouped) {
+      ungroupedPaths.push(path);
+    }
+  });
+
+  return { groupedPaths, ungroupedPaths, tagsMeta };
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({
   spec,
-  groups = {},
+  groups,
   onSelect,
   theme = "light",
   isOpen = false,
@@ -24,8 +86,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [filteredPaths, setFilteredPaths] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!spec?.paths) return;
-
+    if (!spec || !spec.paths || typeof spec.paths !== "object") {
+      setFilteredPaths([]);
+      return;
+    }
     const allPaths = Object.keys(spec.paths);
 
     if (!search) {
@@ -33,24 +97,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } else {
       const filtered: string[] = [];
       allPaths.forEach((path) => {
-        const methods = Object.keys(spec.paths[path]);
+        const methods = Object.keys(spec.paths?.[path] || {});
         methods.forEach((method) => {
           const term = `${method.toUpperCase()} ${path}`.toLowerCase();
           if (term.includes(search.toLowerCase())) filtered.push(path);
         });
       });
-      // remove duplicates if multiple methods matched
       setFilteredPaths(Array.from(new Set(filtered)));
     }
   }, [search, spec]);
+
   const HTTP_METHODS = ["get", "post", "put", "delete", "patch", "options", "head"];
 
   const renderMethodsForPath = (path: string) => {
-    const pathItem = spec.paths[path];
-    return Object.keys(pathItem)
+    if (!spec?.paths?.[path]) return null;
+    return Object.keys(spec.paths[path] || {})
       .filter((method) => HTTP_METHODS.includes(method.toLowerCase()))
       .map((method) => renderPathItem(path, method));
   };
+
   const formatMethod = (method: string) => {
     const colors: Record<string, string> = {
       get: "text-blue-600",
@@ -58,7 +123,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       put: "text-yellow-600",
       delete: "text-red-600",
     };
-    return <span className={`font-bold ${colors[method] || ""}`}>{method.toUpperCase()}</span>;
+    return <span className={`font-bold ${colors[method.toLowerCase()] || ""}`}>{method.toUpperCase()}</span>;
   };
 
   const formatPathGroup = (path: string) =>
@@ -71,33 +136,40 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </span>
       ));
 
-  // group paths
-  const groupedPaths: Record<string, string[]> = {};
-  const ungroupedPaths: string[] = [];
+  // ✅ ใช้ groups ที่ส่งมา หรือ gen ใหม่จาก spec.tags
+  let groupedPaths: Record<string, string[]> = {};
+  let ungroupedPaths: string[] = [];
+  let tagsMeta: Record<string, TagGroup> = {};
 
-  filteredPaths.forEach((path) => {
-    let matched = false;
-    for (const [groupName, prefix] of Object.entries(groups)) {
-      if (path.startsWith(prefix)) {
-        if (!groupedPaths[groupName]) groupedPaths[groupName] = [];
-        groupedPaths[groupName].push(path);
-        matched = true;
-        break;
+  if (groups && Object.keys(groups).length > 0) {
+    // กรณีส่ง groups มาเอง
+    filteredPaths.forEach((path) => {
+      let matched = false;
+      for (const [groupName, prefix] of Object.entries(groups)) {
+        if (path.startsWith(prefix)) {
+          if (!groupedPaths[groupName]) groupedPaths[groupName] = [];
+          groupedPaths[groupName].push(path);
+          matched = true;
+          break;
+        }
       }
-    }
-    if (!matched) ungroupedPaths.push(path);
-  });
+      if (!matched) ungroupedPaths.push(path);
+    });
+  } else if (spec) {
+    // กรณีไม่ได้ส่ง groups → ใช้ tags
+    const result = groupSpec(spec);
+    groupedPaths = result.groupedPaths;
+    ungroupedPaths = result.ungroupedPaths;
+    tagsMeta = result.tagsMeta;
+  }
 
   const handleItemSelect = (item: { path: string; method: string }) => {
     onSelect(item);
     if (window.innerWidth < 1024) onToggle();
   };
 
-  // render path item
-  // render path item
   const renderPathItem = (path: string, method: string) => {
-    const isDeprecated = spec.paths[path][method]?.deprecated;
-
+    const isDeprecated = spec?.paths?.[path]?.[method]?.deprecated;
     return (
       <div
         key={`${path}-${method}`}
@@ -123,7 +195,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           >
             {formatPathGroup(path)}
           </div>
-          {spec.paths[path][method].summary && (
+          {spec?.paths?.[path]?.[method]?.summary && (
             <div
               className={`text-xs mt-1 ${
                 theme === "dark" ? "text-gray-400" : "text-gray-500"
@@ -133,7 +205,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
           )}
         </div>
-        {(spec.paths[path][method]?.security || spec?.security) && (
+        {(spec?.paths?.[path]?.[method]?.security || spec?.security) && (
           <div className="flex-shrink-0 self-start ml-auto">
             <LockKeyhole
               className={`inline-block size-4 ${
@@ -166,10 +238,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Header + search */}
         <div className={`border-b p-4 ${theme === "dark" ? "border-gray-600" : "border-gray-300"}`}>
           <div className="flex items-center justify-between">
-            <h3 className={`font-bold ${theme === "dark" ? "text-white" : "text-black"}`}>Endpoints</h3>
+            <h3 className={`font-bold ${theme === "dark" ? "text-white" : "text-black"}`}>
+              Endpoints
+            </h3>
             <button
               onClick={onToggle}
-              className={`p-1 lg:hidden ${theme === "dark" ? "text-gray-400 hover:text-gray-300" : "text-gray-500 hover:text-gray-700"}`}
+              className={`p-1 lg:hidden ${
+                theme === "dark"
+                  ? "text-gray-400 hover:text-gray-300"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
               <ChevronRight className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
             </button>
@@ -200,20 +278,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
+        {/* เนื้อหา */}
         <div className="flex-1 overflow-y-auto p-3 space-y-4">
-          {/* Grouped */}
-          {Object.entries(groupedPaths).map(([groupName, paths]) => (
+          {Object.entries(groupedPaths).map(([groupKey, paths]) => (
             <div
-              key={groupName}
-              className={`border-b pb-4 last:border-b-0 ${theme === "dark" ? "border-gray-600" : "border-gray-200"}`}
+              key={groupKey}
+              className={`border-b pb-4 last:border-b-0 ${
+                theme === "dark" ? "border-gray-600" : "border-gray-200"
+              }`}
             >
               <h4
-                className={`font-semibold mb-3 px-2 py-1 rounded text-sm uppercase tracking-wide ${
+                className={`font-semibold mb-1 px-2 py-1 rounded text-sm uppercase tracking-wide ${
                   theme === "dark" ? "text-gray-200 bg-gray-700" : "text-gray-700 bg-gray-100"
                 }`}
               >
-                {groupName.charAt(0).toUpperCase() + groupName.slice(1)}
+                {tagsMeta[groupKey]?.name || groupKey}
               </h4>
+              {tagsMeta[groupKey]?.description && (
+                <p className="text-xs mb-2 px-2 text-gray-500">{tagsMeta[groupKey].description}</p>
+              )}
               <div className="space-y-1">
                 {paths.map((path) => renderMethodsForPath(path))}
               </div>
@@ -222,7 +305,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Ungrouped */}
           {ungroupedPaths.length > 0 && (
-            <div className={`border-b pb-4 last:border-b-0 ${theme === "dark" ? "border-gray-600" : "border-gray-200"}`}>
+            <div
+              className={`border-b pb-4 last:border-b-0 ${
+                theme === "dark" ? "border-gray-600" : "border-gray-200"
+              }`}
+            >
               <h4
                 className={`font-semibold mb-3 px-2 py-1 rounded text-sm uppercase tracking-wide ${
                   theme === "dark" ? "text-gray-200 bg-gray-700" : "text-gray-700 bg-gray-100"
@@ -231,7 +318,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 Other
               </h4>
               <div className="space-y-1">
-                {ungroupedPaths.map((path) => Object.keys(spec.paths[path]).map((method) => renderPathItem(path, method)))}
+                {ungroupedPaths.map((path) =>
+                  Object.keys(spec?.paths?.[path] || {}).map((method) =>
+                    renderPathItem(path, method)
+                  )
+                )}
               </div>
             </div>
           )}

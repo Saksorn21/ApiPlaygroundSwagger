@@ -16,7 +16,9 @@ import {Sidebar} from '@/components/Sidebar'
 import Layout from '@/components/Layout'
 import { LoaderCircle } from 'lucide-react'
 import SelectBar, { type ApiOption} from "@/components/ui/SelectBar"
-import { PathsTab } from "@/components/buildTabs/PathsTab"
+import JsonView from 'react18-json-view'
+import 'react18-json-view/src/style.css'
+import { useNotify } from '@/hooks/useNotify'
 interface StartPageProps {
   theme: "dark" | "light"
 }
@@ -48,6 +50,8 @@ const StartPage: React.FC<StartPageProps > = ({theme}) => {
   const [isLoading, setIsLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [selectedEndpoint, setSelectedEndpoint] = useState<{ path: string; method: string } | null>(null);
+  const notify = useNotify(theme)
+  const [testUi, setTestUi] = useState('')
   const spec = useApiSpecStore((state) => state.rawSpec);
   const setSpecState = useApiSpecStore((state) => state.setRawSpec);
   const StateError = useApiSpecStore((state) => state.error);
@@ -101,14 +105,14 @@ const StartPage: React.FC<StartPageProps > = ({theme}) => {
     return options
   }
   useEffect(() => {
-    
-    if(selectedEndpoint?.path){
-      setActiveBuildTab('paths')
-    }
-  if (selectedEndpoint && activeBuildTab === "paths") {
-      const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
-      if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+    reloadSpec()
+    // if(selectedEndpoint?.path){
+    //   setActiveBuildTab('paths')
+    // }
+  // if (selectedEndpoint && activeBuildTab === "paths") {
+  //     const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
+  //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  //   }
   }, [selectedEndpoint, activeBuildTab, reloadSpec]);
 
   return (
@@ -178,7 +182,32 @@ const StartPage: React.FC<StartPageProps > = ({theme}) => {
       <h2 className="font-bold text-lg text-center text-shadow-md">
         {spec && (spec.openapi ? `Build V${spec.openapi}` : `Build V${spec?.swagger}`)}
       </h2>
-
+      {testUi && <div className="text-center" >{testUi}</div>}
+      {spec && StateStatus !== 'error' && <JsonView src={spec} theme={theme === 'dark' ? 'atom' : 'github'}
+                                            collapsed={1}
+                                            collapseStringMode="directly" 
+                                            collapseStringsAfterLength={20}
+                                            displayObjectSize={true}
+                                            displaySize={true} 
+                                            displayArrayIndex={true}
+                                            enableClipboard={true}
+                                            indentWidth={2}
+                                            name={spec.info?.title || 'Spec'}
+                                            shouldCollapse={false}
+                                            dark={theme === 'dark'}
+                                            matchesURL={true}
+                                            sortKeys={true}
+                                            editable
+                                            onEdit={params =>{
+                                              const { newValue, oldValue, indexOfName, parentType, parentPath } = params
+                                              if(indexOfName === 'openapi' || indexOfName === 'swagger'){
+                                                notify.error("You can't change the version of the spec")
+                                                return false
+                                              }
+                           setTestUi(JSON.stringify(params))                   
+                                            }}
+                                            />
+                                            }
       {/* Dynamic Form + Tabs */}
       {spec && StateStatus !== "error" && (
         <div className="border rounded p-4 space-y-4 mt-4">
@@ -221,13 +250,16 @@ const StartPage: React.FC<StartPageProps > = ({theme}) => {
 
             />
             }
-            <PathsTab
-              activeBuildTab={activeBuildTab}
-              spec={spec}
-              handleFormChange={handleFormChange}
-              validator={validator}
-              selectedEndpoint={selectedEndpoint}
+            {activeBuildTab === 'paths' && 
+              <Form
+                schema={SchemaPathsTypeMap(spec)}
+                  formData={spec}
+                  onChange={handleFormChange}
+                  validator={validator}
+
+
               />
+              }
       
             {/* Preview Tree */}
             {activeBuildTab === 'preview' &&
