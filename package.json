@@ -9,12 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "14.2.0",
     "@emotion/react": "11.14.0",
     "@emotion/styled": "11.14.1",
     "@rjsf/core": "6.0.0-beta.15",
     "@rjsf/mui": "6.0.0-beta.15",
     "@rjsf/shadcn": "6.0.0-beta.15",
     "@rjsf/validator-ajv8": "6.0.0-beta.15",
+    "ajv": "8.17.1",
     "axios": "1.11.0",
     "clsx": "2.1.1",
     "file-saver": "2.0.5",
