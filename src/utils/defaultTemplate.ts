@@ -7,7 +7,7 @@ export const defaultApiSpecState: ApiSpecState = {
   securitySchemes: null,
   selectedOperationId: null,
   auth: {
-    type: "none",
+    type: 'none',
     token: undefined,
     scopes: [],
   },

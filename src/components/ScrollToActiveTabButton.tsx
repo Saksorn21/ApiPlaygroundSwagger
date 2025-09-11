@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ChevronUp } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { ChevronUp } from 'lucide-react';
 
 interface ScrollToActiveTabButtonProps {
   activeTabId: string;
@@ -8,7 +8,7 @@ interface ScrollToActiveTabButtonProps {
 
 export default function ScrollToActiveTabButton({
   activeTabId,
-  showAfter = 200
+  showAfter = 200,
 }: ScrollToActiveTabButtonProps) {
   const [visible, setVisible] = useState(false);
 
@@ -16,16 +16,16 @@ export default function ScrollToActiveTabButton({
     const handleScroll = () => {
       setVisible(window.scrollY > showAfter);
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
   }, [showAfter]);
 
   const scrollToTab = () => {
     const target = document.getElementById(activeTabId);
     if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else {
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
@@ -33,14 +33,18 @@ export default function ScrollToActiveTabButton({
     <button
       onClick={scrollToTab}
       className={`
-        fixed bottom-6 right-6 p-3 rounded-full bg-blue-600 text-white shadow-lg
-        transition-all duration-300 ease-in-out transform z-50
-        ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6 pointer-events-none"}
+        fixed bottom-6 right-6 z-50 transform rounded-full bg-blue-600 p-3
+        text-white shadow-lg transition-all duration-300 ease-in-out
+        ${
+          visible
+            ? 'translate-y-0 opacity-100'
+            : 'pointer-events-none translate-y-6 opacity-0'
+        }
         hover:bg-blue-700
       `}
       aria-label="Scroll to active tab"
     >
-      <ChevronUp className="w-5 h-5" />
+      <ChevronUp className="h-5 w-5" />
     </button>
   );
 }

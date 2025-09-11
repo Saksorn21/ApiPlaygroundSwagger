@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { ChevronRight, LockKeyhole } from "lucide-react";
-import { OpenAPISpec } from "@/types/openapi";
-import { SwaggerSpec } from "@/types/swaggerSpec";
+import React, { useState, useEffect } from 'react';
+import { ChevronRight, LockKeyhole } from 'lucide-react';
+import { OpenAPISpec } from '@/types/openapi';
+import { SwaggerSpec } from '@/types/swaggerSpec';
 
 interface SidebarProps {
   spec: OpenAPISpec | SwaggerSpec | null | undefined;
   groups?: Record<string, string>;
   onSelect: (item: { path: string; method: string }) => void;
-  theme?: "dark" | "light";
+  theme?: 'dark' | 'light';
   isOpen?: boolean;
   onToggle?: () => void;
   error?: string | null;
@@ -18,9 +18,12 @@ type TagGroup = {
   name: string;
   description?: string;
 };
-const safeKey = (tag: string) => String(tag).replace(/[^a-zA-Z0-9]/g, "_").toLowerCase();
+const safeKey = (tag: string) =>
+  String(tag)
+    .replace(/[^a-zA-Z0-9]/g, '_')
+    .toLowerCase();
 const groupSpec = (spec: any) => {
-  if (!spec || !spec.paths || typeof spec.paths !== "object") {
+  if (!spec || !spec.paths || typeof spec.paths !== 'object') {
     return { groupedPaths: {}, ungroupedPaths: [], tagsMeta: {} };
   }
 
@@ -29,11 +32,11 @@ const groupSpec = (spec: any) => {
   if (Array.isArray(spec.tags)) {
     spec.tags.forEach((tag: any) => {
       if (!tag?.name) return;
-      const safeKeyName = safeKey(tag.name)
+      const safeKeyName = safeKey(tag.name);
       tagsMeta[safeKeyName] = {
         key: safeKeyName,
         name: String(tag.name),
-        description: tag.description || "",
+        description: tag.description || '',
       };
     });
   }
@@ -44,7 +47,7 @@ const groupSpec = (spec: any) => {
 
   Object.keys(spec.paths || {}).forEach((path) => {
     const pathItem = spec.paths?.[path];
-    if (!pathItem || typeof pathItem !== "object") {
+    if (!pathItem || typeof pathItem !== 'object') {
       ungroupedPaths.push(path);
       return;
     }
@@ -58,9 +61,10 @@ const groupSpec = (spec: any) => {
 
       const opTags: string[] = Array.isArray(op.tags) ? op.tags : [];
       if (opTags.length > 0) {
-        const safeKeyName = safeKey(opTags[0])
+        const safeKeyName = safeKey(opTags[0]);
         if (!groupedPaths[safeKeyName]) groupedPaths[safeKeyName] = [];
-        if (!groupedPaths[safeKeyName].includes(path)) groupedPaths[safeKeyName].push(path);
+        if (!groupedPaths[safeKeyName].includes(path))
+          groupedPaths[safeKeyName].push(path);
         grouped = true;
       }
     });
@@ -77,16 +81,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   spec,
   groups,
   onSelect,
-  theme = "light",
+  theme = 'light',
   isOpen = false,
   onToggle = () => {},
   error = null,
 }) => {
-  const [search, setSearch] = useState<string>("");
+  const [search, setSearch] = useState<string>('');
   const [filteredPaths, setFilteredPaths] = useState<string[]>([]);
 
   useEffect(() => {
-    if (!spec || !spec.paths || typeof spec.paths !== "object") {
+    if (!spec || !spec.paths || typeof spec.paths !== 'object') {
       setFilteredPaths([]);
       return;
     }
@@ -107,7 +111,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   }, [search, spec]);
 
-  const HTTP_METHODS = ["get", "post", "put", "delete", "patch", "options", "head"];
+  const HTTP_METHODS = [
+    'get',
+    'post',
+    'put',
+    'delete',
+    'patch',
+    'options',
+    'head',
+  ];
 
   const renderMethodsForPath = (path: string) => {
     if (!spec?.paths?.[path]) return null;
@@ -118,20 +130,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const formatMethod = (method: string) => {
     const colors: Record<string, string> = {
-      get: "text-blue-600",
-      post: "text-green-600",
-      put: "text-yellow-600",
-      delete: "text-red-600",
+      get: 'text-blue-600',
+      post: 'text-green-600',
+      put: 'text-yellow-600',
+      delete: 'text-red-600',
     };
-    return <span className={`font-bold ${colors[method.toLowerCase()] || ""}`}>{method.toUpperCase()}</span>;
+    return (
+      <span className={`font-bold ${colors[method.toLowerCase()] || ''}`}>
+        {method.toUpperCase()}
+      </span>
+    );
   };
 
   const formatPathGroup = (path: string) =>
     path
-      .split("/")
+      .split('/')
       .filter(Boolean)
       .map((part, idx) => (
-        <span key={idx} className={part.startsWith("{") ? "text-gray-500" : ""}>
+        <span key={idx} className={part.startsWith('{') ? 'text-gray-500' : ''}>
           /{part}
         </span>
       ));
@@ -174,31 +190,34 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div
         key={`${path}-${method}`}
         className={`
-          cursor-pointer p-3 rounded-lg transition-all duration-200 border flex items-start gap-3
-          ${theme === "dark"
-            ? isDeprecated
-              ? "bg-red-900/30 border-red-700/50"
-              : "hover:bg-gray-700 hover:border-gray-600 border-gray-700/50"
-            : isDeprecated
-              ? "bg-red-100 border-red-300"
-              : "hover:bg-gray-50 hover:border-gray-300 border-gray-200"
+          flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200
+          ${
+            theme === 'dark'
+              ? isDeprecated
+                ? 'border-red-700/50 bg-red-900/30'
+                : 'border-gray-700/50 hover:border-gray-600 hover:bg-gray-700'
+              : isDeprecated
+                ? 'border-red-300 bg-red-100'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
           }
         `}
         onClick={() => handleItemSelect({ path, method })}
       >
         <div className="flex-shrink-0">{formatMethod(method)}</div>
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <div
-            className={`text-xs font-mono break-all ${
-              theme === "dark" ? "text-gray-300" : "text-gray-700"
-            } ${isDeprecated ? "line-through decoration-red-500 decoration-2" : ""}`}
+            className={`break-all font-mono text-xs ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            } ${
+              isDeprecated ? 'line-through decoration-red-500 decoration-2' : ''
+            }`}
           >
             {formatPathGroup(path)}
           </div>
           {spec?.paths?.[path]?.[method]?.summary && (
             <div
-              className={`text-xs mt-1 ${
-                theme === "dark" ? "text-gray-400" : "text-gray-500"
+              className={`mt-1 text-xs ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}
             >
               {spec.paths[path][method].summary}
@@ -206,10 +225,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
         {(spec?.paths?.[path]?.[method]?.security || spec?.security) && (
-          <div className="flex-shrink-0 self-start ml-auto">
+          <div className="ml-auto flex-shrink-0 self-start">
             <LockKeyhole
               className={`inline-block size-4 ${
-                theme === "dark" ? "text-red-600" : "text-red-400"
+                theme === 'dark' ? 'text-red-600' : 'text-red-400'
               } drop-shadow-md`}
             />
           </div>
@@ -228,36 +247,54 @@ export const Sidebar: React.FC<SidebarProps> = ({
       )}
       <div
         className={`
-          fixed left-0 top-0 z-50 h-screen w-80 shrink-0
-          flex flex-col border-r transition-transform duration-300 ease-in-out
+          fixed left-0 top-0 z-50 flex h-screen w-80
+          shrink-0 flex-col border-r transition-transform duration-300 ease-in-out
           lg:sticky lg:top-0 lg:z-auto lg:h-screen lg:w-1/4
-          ${isOpen ? "translate-x-0" : "-translate-x-full"} lg:flex lg:translate-x-0
-          ${theme === "dark" ? "bg-gray-800 border-gray-600" : "bg-gray-50 border-gray-300"}
+          ${
+            isOpen ? 'translate-x-0' : '-translate-x-full'
+          } lg:flex lg:translate-x-0
+          ${
+            theme === 'dark'
+              ? 'border-gray-600 bg-gray-800'
+              : 'border-gray-300 bg-gray-50'
+          }
         `}
       >
         {/* Header + search */}
-        <div className={`border-b p-4 ${theme === "dark" ? "border-gray-600" : "border-gray-300"}`}>
+        <div
+          className={`border-b p-4 ${
+            theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
+          }`}
+        >
           <div className="flex items-center justify-between">
-            <h3 className={`font-bold ${theme === "dark" ? "text-white" : "text-black"}`}>
+            <h3
+              className={`font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-black'
+              }`}
+            >
               Endpoints
             </h3>
             <button
               onClick={onToggle}
               className={`p-1 lg:hidden ${
-                theme === "dark"
-                  ? "text-gray-400 hover:text-gray-300"
-                  : "text-gray-500 hover:text-gray-700"
+                theme === 'dark'
+                  ? 'text-gray-400 hover:text-gray-300'
+                  : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <ChevronRight className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
+              <ChevronRight
+                className={`size-4 transition-transform ${
+                  isOpen ? 'rotate-180' : ''
+                }`}
+              />
             </button>
           </div>
           {error && (
             <div
-              className={`mt-2 p-2 rounded text-xs ${
-                theme === "dark"
-                  ? "bg-yellow-900 text-yellow-200 border border-yellow-700"
-                  : "bg-yellow-100 text-yellow-800 border border-yellow-300"
+              className={`mt-2 rounded p-2 text-xs ${
+                theme === 'dark'
+                  ? 'border border-yellow-700 bg-yellow-900 text-yellow-200'
+                  : 'border border-yellow-300 bg-yellow-100 text-yellow-800'
               }`}
             >
               ⚠️ {error}
@@ -269,33 +306,37 @@ export const Sidebar: React.FC<SidebarProps> = ({
               placeholder="Search method/path..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className={`w-full px-3 py-2 rounded border ${
-                theme === "dark"
-                  ? "bg-gray-700 border-gray-600 text-gray-300"
-                  : "bg-gray-100 border-gray-300 text-gray-700"
+              className={`w-full rounded border px-3 py-2 ${
+                theme === 'dark'
+                  ? 'border-gray-600 bg-gray-700 text-gray-300'
+                  : 'border-gray-300 bg-gray-100 text-gray-700'
               }`}
             />
           </div>
         </div>
 
         {/* เนื้อหา */}
-        <div className="flex-1 overflow-y-auto p-3 space-y-4">
+        <div className="flex-1 space-y-4 overflow-y-auto p-3">
           {Object.entries(groupedPaths).map(([groupKey, paths]) => (
             <div
               key={groupKey}
               className={`border-b pb-4 last:border-b-0 ${
-                theme === "dark" ? "border-gray-600" : "border-gray-200"
+                theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
               }`}
             >
               <h4
-                className={`font-semibold mb-1 px-2 py-1 rounded text-sm uppercase tracking-wide ${
-                  theme === "dark" ? "text-gray-200 bg-gray-700" : "text-gray-700 bg-gray-100"
+                className={`mb-1 rounded px-2 py-1 text-sm font-semibold uppercase tracking-wide ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 text-gray-200'
+                    : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 {tagsMeta[groupKey]?.name || groupKey}
               </h4>
               {tagsMeta[groupKey]?.description && (
-                <p className="text-xs mb-2 px-2 text-gray-500">{tagsMeta[groupKey].description}</p>
+                <p className="mb-2 px-2 text-xs text-gray-500">
+                  {tagsMeta[groupKey].description}
+                </p>
               )}
               <div className="space-y-1">
                 {paths.map((path) => renderMethodsForPath(path))}
@@ -307,12 +348,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {ungroupedPaths.length > 0 && (
             <div
               className={`border-b pb-4 last:border-b-0 ${
-                theme === "dark" ? "border-gray-600" : "border-gray-200"
+                theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
               }`}
             >
               <h4
-                className={`font-semibold mb-3 px-2 py-1 rounded text-sm uppercase tracking-wide ${
-                  theme === "dark" ? "text-gray-200 bg-gray-700" : "text-gray-700 bg-gray-100"
+                className={`mb-3 rounded px-2 py-1 text-sm font-semibold uppercase tracking-wide ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 text-gray-200'
+                    : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 Other
@@ -320,8 +363,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="space-y-1">
                 {ungroupedPaths.map((path) =>
                   Object.keys(spec?.paths?.[path] || {}).map((method) =>
-                    renderPathItem(path, method)
-                  )
+                    renderPathItem(path, method),
+                  ),
                 )}
               </div>
             </div>

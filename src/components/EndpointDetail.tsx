@@ -1,42 +1,60 @@
-
-import React, { useState, useEffect, useMemo } from "react";
-import { ResponseViewer } from "./ResponseViewer";
-import { DISPLAY_TARGETS } from "../constants"
-import BodyTab from "./apiTabs/BodyTab"
-import NoRequire from './apiTabs/NoRequire'
-import HeaderTab from './apiTabs/HeaderTab'
-import { Copy, Play, Loader2, Settings } from 'lucide-react'
-import { CodeBlock, atomOneDark } from 'react-code-blocks'
-import { getRequestBody, getRefSchema, getHeaderSchema } from "../utils";
+import React, { useState, useEffect, useMemo } from 'react';
+import { ResponseViewer } from './ResponseViewer';
+import { DISPLAY_TARGETS } from '../constants';
+import BodyTab from './apiTabs/BodyTab';
+import NoRequire from './apiTabs/NoRequire';
+import HeaderTab from './apiTabs/HeaderTab';
+import { Copy, Play, Loader2, Settings } from 'lucide-react';
+import { CodeBlock, atomOneDark } from 'react-code-blocks';
+import { getRequestBody, getRefSchema, getHeaderSchema } from '../utils';
 interface Props {
   spec: any;
-  specUrl: string
+  specUrl: string;
   path: string;
   method: string;
-  onTry: (spec: any, specUrl: string, method: string, path: string, params: { query: any; headers: any; body?: any }) => Promise<any>;
+  onTry: (
+    spec: any,
+    specUrl: string,
+    method: string,
+    path: string,
+    params: { query: any; headers: any; body?: any },
+  ) => Promise<any>;
   theme?: 'dark' | 'light';
 }
 
-export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, onTry, theme = 'light' }) => {
+export const EndpointDetail: React.FC<Props> = ({
+  spec,
+  specUrl,
+  path,
+  method,
+  onTry,
+  theme = 'light',
+}) => {
   const [queryParams, setQueryParams] = useState<Record<string, any>>({});
   const [params, setParams] = useState<Record<string, any>>({});
   const [headers, setHeaders] = useState<Record<string, any>>({});
   const [bodyParams, setBodyParams] = useState<Record<string, any>>({});
-  const [formParams, setFormParams] = useState<{query:Record<string, any>, headers: Record<string, any>, body: Record<string, any>}>({
+  const [formParams, setFormParams] = useState<{
+    query: Record<string, any>;
+    headers: Record<string, any>;
+    body: Record<string, any>;
+  }>({
     query: {},
     headers: {},
-    body: {}
+    body: {},
   });
   const [response, setResponse] = useState<any>(null);
   const [snippets, setSnippets] = useState<Record<string, string>>({});
-  const [testing, setTesting] = useState<any>(null)
-  const [activeTab, setActiveTab] = useState<"code" | "response" | "params" | "headers" | "body">("code");
-  const [selectedTarget, setSelectedTarget] = useState<string>("");
-  const [contentType, setContentType] = useState<string>("application/json")
+  const [testing, setTesting] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<
+    'code' | 'response' | 'params' | 'headers' | 'body'
+  >('code');
+  const [selectedTarget, setSelectedTarget] = useState<string>('');
+  const [contentType, setContentType] = useState<string>('application/json');
 
   const copyCode = (code: string) => {
-    navigator.clipboard.writeText(code)
-  }
+    navigator.clipboard.writeText(code);
+  };
   const getDefaultValue = (field: any, spec: any): any => {
     // ถ้า field อ้างอิง $ref ให้ดึง schema จริง
     if (field.$ref) {
@@ -49,21 +67,21 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
     if (field.default !== undefined) return field.default;
 
     // primitive types
-    switch(field.type) {
-      case "integer":
-      case "number":
+    switch (field.type) {
+      case 'integer':
+      case 'number':
         return 0;
-      case "boolean":
+      case 'boolean':
         return false;
-      case "string":
-        return "string";
+      case 'string':
+        return 'string';
     }
 
     // object
-    if (field.type === "object") {
+    if (field.type === 'object') {
       const obj: any = {};
       if (field.properties) {
-        Object.keys(field.properties).forEach(k => {
+        Object.keys(field.properties).forEach((k) => {
           obj[k] = getDefaultValue(field.properties[k], spec);
         });
       }
@@ -71,7 +89,7 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
     }
 
     // array
-    if (field.type === "array") {
+    if (field.type === 'array') {
       if (field.items?.$ref) {
         const ref = getRefSchema(spec, field.items.$ref);
         return [getDefaultValue(ref, spec)];
@@ -85,25 +103,31 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
     return null;
   };
   const languageCodeblock = (target: string) => {
-    const lan = target.split('_')[0]
-    if(lan === 'node') return 'javascript'
-    if(lan === 'objc') return 'objectivec'
-    return lan
-  }
+    const lan = target.split('_')[0];
+    if (lan === 'node') return 'javascript';
+    if (lan === 'objc') return 'objectivec';
+    return lan;
+  };
 
   const grouped = useMemo(() => {
-    return DISPLAY_TARGETS.reduce((acc, item) => {
-      acc[item.lang] = acc[item.lang] || [];
-      acc[item.lang].push(item);
-      return acc;
-    }, {} as Record<string, { lang: string; client: string; target: string }[]>);
+    return DISPLAY_TARGETS.reduce(
+      (acc, item) => {
+        acc[item.lang] = acc[item.lang] || [];
+        acc[item.lang].push(item);
+        return acc;
+      },
+      {} as Record<string, { lang: string; client: string; target: string }[]>,
+    );
   }, []);
   const [arrayItems, setArrayItems] = useState<any[]>([]);
 
-
-
-  const handleInputChange = (setter: any, obj: Record<string, any>, name: string, value: string | File | undefined) => {
-    setTesting({ obj, name, value})
+  const handleInputChange = (
+    setter: any,
+    obj: Record<string, any>,
+    name: string,
+    value: string | File | undefined,
+  ) => {
+    setTesting({ obj, name, value });
     setter((prev: any) => ({ ...prev, [name]: value }));
     // if (value instanceof File) {
     //   setBodyParams((prev) =>({...prev, [name]: value.name}))
@@ -111,135 +135,206 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
     // else{
     //   setBodyParams((prev) =>({...prev, [name]: value}))
     // }
-    
   };
 
   const handleTry = async () => {
-    setTesting({queryParams, headers, bodyParams, formParams})
-    const res = await onTry(spec, specUrl, method, path, { query: queryParams, headers, body: formParams.body });
+    setTesting({ queryParams, headers, bodyParams, formParams });
+    const res = await onTry(spec, specUrl, method, path, {
+      query: queryParams,
+      headers,
+      body: formParams.body,
+    });
     setResponse(res.data);
     if (res.snippets) setSnippets(res.snippets);
-    
   };
- 
+
   const parameters = spec.paths[path][method].parameters || [];
-  const queryFields = parameters.filter((p: any) => p.in === "query" || p.in === "formData" || p.in === "path")
-  
-  const headerFields = parameters.filter((p: any) => p.in === "header");
-  const headerSchema = getHeaderSchema(spec, path, method)
+  const queryFields = parameters.filter(
+    (p: any) => p.in === 'query' || p.in === 'formData' || p.in === 'path',
+  );
+
+  const headerFields = parameters.filter((p: any) => p.in === 'header');
+  const headerSchema = getHeaderSchema(spec, path, method);
 
   const bodyInfo = getRequestBody(spec.paths[path], method, spec);
   const bodySchema = bodyInfo?.schema;
-  const firstContentType = bodyInfo?.mediaType || "application/json";
+  const firstContentType = bodyInfo?.mediaType || 'application/json';
 
   // ✅ ตั้ง activeTab อัตโนมัติ
-  
+
   useEffect(() => {
     const template: Record<string, string> = {};
     DISPLAY_TARGETS.forEach(({ target }) => {
-      template[target] = `${target} snippet for ${method.toUpperCase()} ${path} (placeholder)`;
+      template[target] =
+        `${target} snippet for ${method.toUpperCase()} ${path} (placeholder)`;
     });
-      
-    
-    setSnippets(template);
-    setSelectedTarget(DISPLAY_TARGETS[0]?.target || "");
-    setActiveTab("code");
-    setResponse(null)
- 
-    setContentType("application/json")
-          if (bodySchema?.type === "object") {
-            const initBody: any = {};
-            Object.keys(bodySchema.properties).forEach((k) => {
-              initBody[k] = getDefaultValue(bodySchema.properties[k], spec);
-            });
-            setBodyParams(initBody);
-      }
 
+    setSnippets(template);
+    setSelectedTarget(DISPLAY_TARGETS[0]?.target || '');
+    setActiveTab('code');
+    setResponse(null);
+
+    setContentType('application/json');
+    if (bodySchema?.type === 'object') {
+      const initBody: any = {};
+      Object.keys(bodySchema.properties).forEach((k) => {
+        initBody[k] = getDefaultValue(bodySchema.properties[k], spec);
+      });
+      setBodyParams(initBody);
+    }
   }, [path, method, bodySchema]);
 
   return (
     <div>
       {/* Endpoint */}
-      <h3 className="font-bold mb-2">
+      <h3 className="mb-2 font-bold">
         {method.toUpperCase()} {path}
       </h3>
-      
+
       {/* Description */}
       {spec.paths[path][method].description && (
-        <p className="mb-2">
-          {spec.paths[path][method].description}
-        </p>
+        <p className="mb-2">{spec.paths[path][method].description}</p>
       )}
       {testing && JSON.stringify(testing)}
       {/* Try It */}
       <button
-        className="bg-blue-600 text-white px-3 py-1 rounded mb-2 hover:bg-blue-700"
+        className="mb-2 rounded bg-blue-600 px-3 py-1 text-white hover:bg-blue-700"
         onClick={handleTry}
       >
         Try It
       </button>
 
       {/* Tabs */}
-      <div className={`flex border-b mb-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
+      <div
+        className={`mb-2 flex border-b ${
+          theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
+        }`}
+      >
         <button
-          className={`px-3 py-1 ${activeTab === 'code' ? 'border-b-2 border-blue-600' : ''} ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
+          className={`px-3 py-1 ${
+            activeTab === 'code' ? 'border-b-2 border-blue-600' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-700 hover:text-black'
+          }`}
           onClick={() => setActiveTab('code')}
         >
           Code
         </button>
         <button
-          className={`px-3 py-1 ${activeTab === 'params' ? 'border-b-2 border-blue-600' : ''} ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
+          className={`px-3 py-1 ${
+            activeTab === 'params' ? 'border-b-2 border-blue-600' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-700 hover:text-black'
+          }`}
           onClick={() => setActiveTab('params')}
         >
           Params {queryFields.length > 0 && `(${queryFields.length})`}
         </button>
         <button
-          className={`px-3 py-1 ${activeTab === 'headers' ? 'border-b-2 border-blue-600' : ''} ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
+          className={`px-3 py-1 ${
+            activeTab === 'headers' ? 'border-b-2 border-blue-600' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-700 hover:text-black'
+          }`}
           onClick={() => setActiveTab('headers')}
         >
-          Headers {headerSchema.security?.length > 0 && `(${headerSchema.security?.length})`}
+          Headers{' '}
+          {headerSchema.security?.length > 0 &&
+            `(${headerSchema.security?.length})`}
         </button>
         <button
-          className={`px-3 py-1 ${activeTab === 'body' ? 'border-b-2 border-blue-600' : ''} ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
+          className={`px-3 py-1 ${
+            activeTab === 'body' ? 'border-b-2 border-blue-600' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-700 hover:text-black'
+          }`}
           onClick={() => setActiveTab('body')}
         >
-          Body {bodySchema?.properties.length > 0 && `(${bodySchema?.properties.length})`}
+          Body{' '}
+          {bodySchema?.properties.length > 0 &&
+            `(${bodySchema?.properties.length})`}
         </button>
         <button
-          className={`px-3 py-1 ${activeTab === 'response' ? 'border-b-2 border-blue-600' : ''} ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-black'}`}
+          className={`px-3 py-1 ${
+            activeTab === 'response' ? 'border-b-2 border-blue-600' : ''
+          } ${
+            theme === 'dark'
+              ? 'text-gray-300 hover:text-white'
+              : 'text-gray-700 hover:text-black'
+          }`}
           onClick={() => setActiveTab('response')}
         >
           Response
         </button>
       </div>
-<HeaderTab activeTab={activeTab} headerSchema={headerSchema} headers={headers} setHeaders={setHeaders} theme={theme} handleInputChange={handleInputChange} />
+      <HeaderTab
+        activeTab={activeTab}
+        headerSchema={headerSchema}
+        headers={headers}
+        setHeaders={setHeaders}
+        theme={theme}
+        handleInputChange={handleInputChange}
+      />
 
       {/* Parameters Tab */}
       {activeTab === 'params' && (
         <div>
           {queryFields.length > 0 ? (
-            <div className={`border p-2 mb-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
-              <h4 className="font-bold mb-1">Query / Path Parameters</h4>
+            <div
+              className={`mb-2 border p-2 ${
+                theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
+              }`}
+            >
+              <h4 className="mb-1 font-bold">Query / Path Parameters</h4>
               {queryFields.map((p: any) => (
                 <div key={p.name} className="mb-1">
-                
                   <label className="mr-2 font-semibold">{p.name}</label>
                   <input
-                    type=  {p.type === 'file' ? 'file' : 'text'}
+                    type={p.type === 'file' ? 'file' : 'text'}
                     value={queryParams[p.name] || ''}
                     placeholder={p.description || ''}
-                    className={`border rounded px-1 py-0.5  ${theme === 'dark' ? 'bg-gray-700 text-white border-gray-600' : 'bg-white text-black border-gray-300'} ${p.type ==='file' ? 'file-input file-input-bordered file-input-sm w-full max-w-xs' : 'text-input text-input-bordered text-input-sm w-full max-w-xs'}`}
-                    onChange={(e) => handleInputChange(setQueryParams, queryParams, p.name, e.target.value)}
+                    className={`rounded border px-1 py-0.5  ${
+                      theme === 'dark'
+                        ? 'border-gray-600 bg-gray-700 text-white'
+                        : 'border-gray-300 bg-white text-black'
+                    } ${
+                      p.type === 'file'
+                        ? 'file-input file-input-bordered file-input-sm w-full max-w-xs'
+                        : 'text-input text-input-bordered text-input-sm w-full max-w-xs'
+                    }`}
+                    onChange={(e) =>
+                      handleInputChange(
+                        setQueryParams,
+                        queryParams,
+                        p.name,
+                        e.target.value,
+                      )
+                    }
                   />
-                  {p.required && <span className="text-red-500 ml-1">*</span>}
-                  {p.description && <p className="text-xs mt-1 text-gray-500">{p.description}</p>}
+                  {p.required && <span className="ml-1 text-red-500">*</span>}
+                  {p.description && (
+                    <p className="mt-1 text-xs text-gray-500">
+                      {p.description}
+                    </p>
+                  )}
                 </div>
-              
               ))}
             </div>
           ) : (
-            <div className={`border p-2 mb-2 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-300'}`}>
-              <h4 className="font-bold mb-1">No Query / Path Parameters</h4>
+            <div
+              className={`mb-2 border p-2 ${
+                theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
+              }`}
+            >
+              <h4 className="mb-1 font-bold">No Query / Path Parameters</h4>
               <p className="text-gray-500">
                 This endpoint does not require any query or path parameters.
               </p>
@@ -249,19 +344,34 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
       )}
 
       {/* Body Tab */}
-        
-          <BodyTab body={formParams.body} activeTab={activeTab} theme={theme} bodyInfo={bodyInfo} bodySchema={bodySchema} spec={spec} onChange={(key: string, value: any) => setFormParams(prev => ({ ...prev, body: { ...prev.body, [key]: value } }))} />
-        
-      
-       
+
+      <BodyTab
+        body={formParams.body}
+        activeTab={activeTab}
+        theme={theme}
+        bodyInfo={bodyInfo}
+        bodySchema={bodySchema}
+        spec={spec}
+        onChange={(key: string, value: any) =>
+          setFormParams((prev) => ({
+            ...prev,
+            body: { ...prev.body, [key]: value },
+          }))
+        }
+      />
+
       {/* Code Tab */}
       {activeTab === 'code' && (
-        <div className="flex flex-col h-[500px] overflow-hidden">
-          <h4 className="font-bold mb-1">Code Snippets</h4>
+        <div className="flex h-[500px] flex-col overflow-hidden">
+          <h4 className="mb-1 font-bold">Code Snippets</h4>
           <select
             value={selectedTarget}
             onChange={(e) => setSelectedTarget(e.target.value)}
-            className={`border rounded px-1 py-0.5 mb-2 w-40 ${theme === 'dark' ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-black border-gray-300'}`}
+            className={`mb-2 w-40 rounded border px-1 py-0.5 ${
+              theme === 'dark'
+                ? 'border-gray-600 bg-gray-800 text-white'
+                : 'border-gray-300 bg-white text-black'
+            }`}
           >
             {Object.entries(grouped).map(([lang, items]) => (
               <optgroup key={lang} label={lang}>
@@ -273,8 +383,8 @@ export const EndpointDetail: React.FC<Props> = ({ spec, specUrl,  path, method, 
               </optgroup>
             ))}
           </select>
-          <div className="flex-1 overflow-auto relative max-w-full">
-            <div className="overflow-auto max-w-full rounded-lg relative">
+          <div className="relative max-w-full flex-1 overflow-auto">
+            <div className="relative max-w-full overflow-auto rounded-lg">
               <div style={{ overflowWrap: 'break-word' }}>
                 <CodeBlock
                   text={snippets[selectedTarget] || 'No snippet'}

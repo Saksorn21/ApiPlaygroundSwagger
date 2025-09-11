@@ -1,30 +1,30 @@
-import React from 'react'
-import NoRequire from './NoRequire'
+import React from 'react';
+import NoRequire from './NoRequire';
 
 interface HeaderField {
-  name: string
-  description?: string
-  required?: boolean
-  schema?: { type?: string }
-  in?: string
-  authorizationUrl?: string | null
-  flow?: string
-  type?: string
-  scopes?: Record<string, string>
+  name: string;
+  description?: string;
+  required?: boolean;
+  schema?: { type?: string };
+  in?: string;
+  authorizationUrl?: string | null;
+  flow?: string;
+  type?: string;
+  scopes?: Record<string, string>;
 }
 
 interface HeaderTabProps {
-  activeTab: string
-  headerSchema: any // ผลลัพธ์จาก getHeaderSchema
-  headers: Record<string, any>
-  setHeaders: React.Dispatch<React.SetStateAction<Record<string, any>>>
-  theme: 'dark' | 'light'
+  activeTab: string;
+  headerSchema: any; // ผลลัพธ์จาก getHeaderSchema
+  headers: Record<string, any>;
+  setHeaders: React.Dispatch<React.SetStateAction<Record<string, any>>>;
+  theme: 'dark' | 'light';
   handleInputChange: (
     setFn: React.Dispatch<React.SetStateAction<Record<string, any>>>,
     state: Record<string, any>,
     key: string,
-    value: any
-  ) => void
+    value: any,
+  ) => void;
 }
 
 const HeaderTab: React.FC<HeaderTabProps> = ({
@@ -33,14 +33,14 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
   headers,
   setHeaders,
   theme,
-  handleInputChange
+  handleInputChange,
 }) => {
-  if (activeTab !== 'headers') return null
-  if (!headerSchema) return <NoRequire title="Headers" theme={theme} />
+  if (activeTab !== 'headers') return null;
+  if (!headerSchema) return <NoRequire title="Headers" theme={theme} />;
 
   // รวม parameters ปกติ + security schemes
-  const paramHeaders: HeaderField[] = headerSchema.parameters || []
-  const infoHeaders = headerSchema.info || {}
+  const paramHeaders: HeaderField[] = headerSchema.parameters || [];
+  const infoHeaders = headerSchema.info || {};
 
   const securityHeaders: HeaderField[] =
     headerSchema.security?.map((s: any) => ({
@@ -51,35 +51,34 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
       in: infoHeaders[s.name]?.in || 'header',
       authorizationUrl: infoHeaders[s.name]?.authorizationUrl || null,
       flow: infoHeaders[s.name]?.flow,
-      scopes: infoHeaders[s.name]?.scopes || {}
-    })) || []
+      scopes: infoHeaders[s.name]?.scopes || {},
+    })) || [];
 
-  const allHeaders = [...paramHeaders, ...securityHeaders]
+  const allHeaders = [...paramHeaders, ...securityHeaders];
 
   // เลือก header หลัก ๆ (แสดง input)
   const mainHeaders = allHeaders.filter(
     (h) =>
-      ['Authorization', 'Content-Type', 'Accept'].includes(h.name) || h.required
-  )
+      ['Authorization', 'Content-Type', 'Accept'].includes(h.name) ||
+      h.required,
+  );
 
   return (
     <>
       {mainHeaders.length > 0 ? (
         <div
-          className={`border p-2 mb-2 ${
+          className={`mb-2 border p-2 ${
             theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
           }`}
         >
-          <h4 className="font-bold mb-1 text-shadow-sm">Headers</h4>
+          <h4 className="mb-1 font-bold text-shadow-sm">Headers</h4>
 
           {mainHeaders.map((h) => (
             <div key={h.name} className="mb-2">
               <label className="mr-2 font-semibold text-shadow-sm">
                 {h.name} ({h.type}
                 {h.flow && ', ' + h.flow})
-                {h.required && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
+                {h.required && <span className="ml-1 text-red-500">*</span>}
               </label>
 
               {h.authorizationUrl && (
@@ -87,7 +86,7 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
                   Authorization URL:{' '}
                   <a
                     href={h.authorizationUrl}
-                    className="ml-1 text-blue-500 hover:underline text-shadow-sm"
+                    className="ml-1 text-blue-500 text-shadow-sm hover:underline"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -97,9 +96,7 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
               )}
 
               {h.flow && (
-                <div className="text-xs text-gray-500">
-                  Flow: {h.flow}
-                </div>
+                <div className="text-xs text-gray-500">Flow: {h.flow}</div>
               )}
 
               {/* Input field */}
@@ -107,25 +104,22 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
                 type="text"
                 value={headers[h.name] || ''}
                 placeholder={h.description || ''}
-                className={`border rounded px-1 py-0.5 w-full ${
+                className={`w-full rounded border px-1 py-0.5 ${
                   theme === 'dark'
-                    ? 'bg-gray-700 text-white border-gray-600'
-                    : 'bg-white text-black border-gray-300'
+                    ? 'border-gray-600 bg-gray-700 text-white'
+                    : 'border-gray-300 bg-white text-black'
                 }`}
                 onChange={(e) =>
-                  handleInputChange(
-                    setHeaders,
-                    headers,
-                    h.name,
-                    e.target.value
-                  )
+                  handleInputChange(setHeaders, headers, h.name, e.target.value)
                 }
               />
 
               {/* Scopes */}
               {h.scopes && Object.keys(h.scopes).length > 0 && (
                 <div className="mt-1">
-                  <div className="text-xs text-gray-500 font-semibold">Scopes:</div>
+                  <div className="text-xs font-semibold text-gray-500">
+                    Scopes:
+                  </div>
                   {Object.entries(h.scopes).map(([key, value]) => (
                     <label
                       key={key}
@@ -136,19 +130,22 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
                         className="checkbox checkbox-xs"
                         checked={!!headers[key]}
                         onChange={(e) => {
-                          const newState = { ...headers, [key]: e.target.checked }
+                          const newState = {
+                            ...headers,
+                            [key]: e.target.checked,
+                          };
 
                           // รวม scopes ที่ถูกเลือก
                           const selectedScopes = Object.keys(h.scopes)
                             .filter((s) => newState[s])
-                            .join(' ')
+                            .join(' ');
 
                           // อัพเดท Authorization ด้วย
                           newState['Authorization'] = selectedScopes
                             ? `Bearer ${selectedScopes}`
-                            : ''
+                            : '';
 
-                          setHeaders(newState)
+                          setHeaders(newState);
                         }}
                       />
                       <span>
@@ -165,7 +162,7 @@ const HeaderTab: React.FC<HeaderTabProps> = ({
         <NoRequire title="Headers" theme={theme} />
       )}
     </>
-  )
-}
+  );
+};
 
-export default HeaderTab
+export default HeaderTab;

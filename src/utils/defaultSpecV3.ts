@@ -1,31 +1,31 @@
-import { OpenAPISpec } from "@/types/openapi";
+import { OpenAPISpec } from '@/types/openapi';
 
 export const defaultSpec: OpenAPISpec = {
-  openapi: "3.0.3",
+  openapi: '3.0.3',
   info: {
-    title: "New API",
-    version: "1.0.0",
-    description: "Generated with API Playground",
+    title: 'New API',
+    version: '1.0.0',
+    description: 'Generated with API Playground',
   },
   servers: [
     {
-      url: "http://localhost:3000",
-      description: "Local development server",
+      url: 'http://localhost:3000',
+      description: 'Local development server',
     },
   ],
   paths: {
-    "/example": {
+    '/example': {
       get: {
-        summary: "Get example resource",
-        description: "Retrieve a list of example items.",
+        summary: 'Get example resource',
+        description: 'Retrieve a list of example items.',
         responses: {
-          "200": {
-            description: "Successful response",
+          '200': {
+            description: 'Successful response',
             content: {
-              "application/json": {
+              'application/json': {
                 schema: {
-                  type: "array",
-                  items: { type: "string" },
+                  type: 'array',
+                  items: { type: 'string' },
                 },
               },
             },
@@ -37,19 +37,19 @@ export const defaultSpec: OpenAPISpec = {
   components: {
     schemas: {
       Example: {
-        type: "object",
+        type: 'object',
         properties: {
-          id: { type: "string" },
-          name: { type: "string" },
+          id: { type: 'string' },
+          name: { type: 'string' },
         },
-        required: ["id", "name"],
+        required: ['id', 'name'],
       },
     },
     securitySchemes: {
       bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
       },
     },
   },
@@ -60,8 +60,8 @@ export const defaultSpec: OpenAPISpec = {
   ],
   tags: [
     {
-      name: "example",
-      description: "Operations related to example resources",
+      name: 'example',
+      description: 'Operations related to example resources',
     },
   ],
 };

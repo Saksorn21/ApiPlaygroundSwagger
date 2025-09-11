@@ -1,5 +1,5 @@
 // types/openapi.ts
-import { SwaggerSpec } from './swaggerSpec'
+import { SwaggerSpec } from './swaggerSpec';
 // ---------- OpenAPI 3.x Spec ----------
 export interface OpenAPISpec {
   openapi: string; // e.g. "3.0.3"
@@ -74,7 +74,7 @@ export interface OperationObject {
 // ---------- Parameters ----------
 export interface ParameterObject {
   name: string;
-  in: "query" | "header" | "path" | "cookie";
+  in: 'query' | 'header' | 'path' | 'cookie';
   description?: string;
   required?: boolean;
   deprecated?: boolean;
@@ -132,13 +132,13 @@ export interface SecurityRequirementObject {
   [name: string]: string[];
 }
 
-export type SecuritySchemeType = "apiKey" | "http" | "oauth2" | "openIdConnect";
+export type SecuritySchemeType = 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
 
 export interface SecuritySchemeObject {
   type: SecuritySchemeType;
   description?: string;
   name?: string;
-  in?: "query" | "header" | "cookie";
+  in?: 'query' | 'header' | 'cookie';
   scheme?: string;
   bearerFormat?: string;
   flows?: OAuthFlowsObject;
@@ -180,9 +180,9 @@ export interface ApiSpecState {
   operations: Record<string, Operation>; // keyed by operationId
   securitySchemes: Record<string, SecurityScheme> | null;
   selectedOperationId: string | null;
-  
+
   auth: {
-    type: "none" | "apiKey" | "oauth2" | "basic";
+    type: 'none' | 'apiKey' | 'oauth2' | 'basic';
     token?: string;
     scopes?: string[];
   };
@@ -197,17 +197,17 @@ export interface ApiSpecState {
     headers: Record<string, string> | null;
     error?: string;
   };
-  status: 'idle' | 'loading' | 'success' | 'error' | 'reloaded'
-  error: string | null
+  status: 'idle' | 'loading' | 'success' | 'error' | 'reloaded';
+  error: string | null;
 }
 
 export interface ApiSpecActions {
   setRawSpec: (spec: OpenAPISpec | SwaggerSpec) => void;
   reloadSpec: (newSpec: OpenAPISpec | SwaggerSpec) => void;
   selectOperation: (operationId: string) => void;
-  setAuth: (auth: ApiSpecState["auth"]) => void;
-  setRequest: (req: Partial<ApiSpecState["request"]>) => void;
-  setResponse: (res: Partial<ApiSpecState["response"]>) => void;
+  setAuth: (auth: ApiSpecState['auth']) => void;
+  setRequest: (req: Partial<ApiSpecState['request']>) => void;
+  setResponse: (res: Partial<ApiSpecState['response']>) => void;
   reset: () => void;
 }
 
@@ -230,7 +230,7 @@ export interface Operation {
 
 export interface Parameter {
   name: string;
-  in: "query" | "header" | "path" | "cookie";
+  in: 'query' | 'header' | 'path' | 'cookie';
   required: boolean;
   schema?: any;
 }
@@ -245,7 +245,7 @@ export interface Response {
 }
 
 export interface SecurityScheme {
-  type: "apiKey" | "http" | "oauth2" | "openIdConnect";
+  type: 'apiKey' | 'http' | 'oauth2' | 'openIdConnect';
   name?: string;
   scheme?: string;
   bearerFormat?: string;

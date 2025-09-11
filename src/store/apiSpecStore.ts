@@ -1,9 +1,14 @@
 // store/apiSpecStore.ts
-import { create } from "zustand"
-import { persist } from "zustand/middleware"
-import localforage from "localforage"
-import { ApiSpecState, OpenAPISpec, Operation, ApiSpecActions } from "@/types/openapi"
-import { SwaggerSpec} from "@/types/swaggerSpec"
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+import localforage from 'localforage';
+import {
+  ApiSpecState,
+  OpenAPISpec,
+  Operation,
+  ApiSpecActions,
+} from '@/types/openapi';
+import { SwaggerSpec } from '@/types/swaggerSpec';
 
 export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
   persist(
@@ -16,7 +21,7 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
       operations: {},
       securitySchemes: null,
       selectedOperationId: null,
-      auth: { type: "none", token: undefined, scopes: [] },
+      auth: { type: 'none', token: undefined, scopes: [] },
       request: { params: {}, body: null, headers: {} },
       response: { status: null, data: null, headers: null, error: undefined },
       status: 'idle',
@@ -31,7 +36,7 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
 
           Object.entries(spec.paths ?? {}).forEach(([path, pathItem]) => {
             Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
-              if (["get", "post", "put", "delete", "patch"].includes(method)) {
+              if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
                 const operationId = op.operationId || `${method}_${path}`;
                 operations[operationId] = {
                   operationId,
@@ -60,44 +65,46 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
         set((state) => {
           const oldAuth = state.auth;
           const oldHeaders = state.request.headers;
-            if ('openapi' in newSpec || 'swagger' in newSpec) {
-
-          const operations: Record<string, Operation> = {};
-          Object.entries(newSpec.paths ?? {}).forEach(([path, pathItem]) => {
-            Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
-              if (["get", "post", "put", "delete", "patch"].includes(method)) {
-                const operationId = op.operationId || `${method}_${path}`;
-                operations[operationId] = {
-                  operationId,
-                  method,
-                  path,
-                  summary: op.summary,
-                  parameters: op.parameters,
-                  requestBody: op.requestBody,
-                  responses: op.responses,
-                };
-              }
+          if ('openapi' in newSpec || 'swagger' in newSpec) {
+            const operations: Record<string, Operation> = {};
+            Object.entries(newSpec.paths ?? {}).forEach(([path, pathItem]) => {
+              Object.entries(pathItem).forEach(
+                ([method, op]: [string, any]) => {
+                  if (
+                    ['get', 'post', 'put', 'delete', 'patch'].includes(method)
+                  ) {
+                    const operationId = op.operationId || `${method}_${path}`;
+                    operations[operationId] = {
+                      operationId,
+                      method,
+                      path,
+                      summary: op.summary,
+                      parameters: op.parameters,
+                      requestBody: op.requestBody,
+                      responses: op.responses,
+                    };
+                  }
+                },
+              );
             });
-          });
-            
 
-          return {
-            rawSpec: newSpec,
-            info: newSpec.info ?? null,
-            servers: (newSpec.servers ?? []).map((s) => s.url),
-            operations,
-            securitySchemes: newSpec.components?.securitySchemes ?? null,
-            auth: oldAuth,
-            request: { ...state.request, headers: oldHeaders },
-            status: 'reloaded',
-            error: null
-          };
-          }else{
+            return {
+              rawSpec: newSpec,
+              info: newSpec.info ?? null,
+              servers: (newSpec.servers ?? []).map((s) => s.url),
+              operations,
+              securitySchemes: newSpec.components?.securitySchemes ?? null,
+              auth: oldAuth,
+              request: { ...state.request, headers: oldHeaders },
+              status: 'reloaded',
+              error: null,
+            };
+          } else {
             return {
               ...state,
               status: 'error',
-              error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x'
-            }
+              error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x',
+            };
           }
         }),
 
@@ -105,7 +112,12 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
         set(() => ({
           selectedOperationId: operationId,
           request: { params: {}, body: null, headers: {} },
-          response: { status: null, data: null, headers: null, error: undefined },
+          response: {
+            status: null,
+            data: null,
+            headers: null,
+            error: undefined,
+          },
         })),
 
       setAuth: (auth) => set(() => ({ auth })),
@@ -122,15 +134,20 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
           operations: {},
           securitySchemes: null,
           selectedOperationId: null,
-          auth: { type: "none", token: undefined, scopes: [] },
+          auth: { type: 'none', token: undefined, scopes: [] },
           request: { params: {}, body: null, headers: {} },
-          response: { status: null, data: null, headers: null, error: undefined },
+          response: {
+            status: null,
+            data: null,
+            headers: null,
+            error: undefined,
+          },
           status: 'idle',
-          error: null
+          error: null,
         })),
     }),
     {
-      name: "api-spec-storage",
+      name: 'api-spec-storage',
       getStorage: () => localforage,
       partialize: (state) => ({
         rawSpec: state.rawSpec,
@@ -142,58 +159,56 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
         auth: state.auth,
         request: state.request,
         status: state.status,
-        error: state.error
+        error: state.error,
       }),
-    }
-  )
+    },
+  ),
 );
 
-
 export const reloadSpec = async (newSpec: OpenAPISpec) => {
-  const store = useApiSpecStore.getState()
+  const store = useApiSpecStore.getState();
 
   // เก็บค่าเดิมบางส่วนไว้
-  const oldAuth = store.auth
-  const oldRequestHeaders = store.request.headers
+  const oldAuth = store.auth;
+  const oldRequestHeaders = store.request.headers;
 
   // สร้าง operations ใหม่จาก spec ใหม่
-    if ('openapi' in newSpec || 'swagger' in newSpec) {
-  const operations: Record<string, Operation> = {}
-  Object.entries(newSpec.paths ?? {}).forEach(([path, pathItem]) => {
-    Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
-      if (["get", "post", "put", "delete", "patch"].includes(method)) {
-        const operationId = op.operationId || `${method}_${path}`
-        operations[operationId] = {
-          operationId,
-          method,
-          path,
-          summary: op.summary,
-          parameters: op.parameters,
-          requestBody: op.requestBody,
-          responses: op.responses,
+  if ('openapi' in newSpec || 'swagger' in newSpec) {
+    const operations: Record<string, Operation> = {};
+    Object.entries(newSpec.paths ?? {}).forEach(([path, pathItem]) => {
+      Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
+        if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
+          const operationId = op.operationId || `${method}_${path}`;
+          operations[operationId] = {
+            operationId,
+            method,
+            path,
+            summary: op.summary,
+            parameters: op.parameters,
+            requestBody: op.requestBody,
+            responses: op.responses,
+          };
         }
-      }
-    })
-  })
-   
-  // อัปเดต store โดย merge กับค่าเดิมบางส่วน
-  useApiSpecStore.setState({
-    rawSpec: newSpec,
-    info: newSpec.info ?? null,
-    servers: (newSpec.servers ?? []).map((s) => s.url),
-    operations,
-    securitySchemes: newSpec.components?.securitySchemes ?? null,
-    auth: oldAuth, // เก็บ auth เดิม
-    request: { ...store.request, headers: oldRequestHeaders }, // เก็บ headers เดิม
-    status: 'reloaded',
-    error: null
-  })
-    }else{
-      useApiSpecStore.setState({
-        ...store,
-        status: 'error',
-        error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x'
-        
-      })
-    }
-}
+      });
+    });
+
+    // อัปเดต store โดย merge กับค่าเดิมบางส่วน
+    useApiSpecStore.setState({
+      rawSpec: newSpec,
+      info: newSpec.info ?? null,
+      servers: (newSpec.servers ?? []).map((s) => s.url),
+      operations,
+      securitySchemes: newSpec.components?.securitySchemes ?? null,
+      auth: oldAuth, // เก็บ auth เดิม
+      request: { ...store.request, headers: oldRequestHeaders }, // เก็บ headers เดิม
+      status: 'reloaded',
+      error: null,
+    });
+  } else {
+    useApiSpecStore.setState({
+      ...store,
+      status: 'error',
+      error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x',
+    });
+  }
+};

@@ -7,20 +7,20 @@ export function getRequestBody(pathItem: any, method: string, spec: any) {
   if (operation.requestBody) {
     const requestBody = operation.requestBody;
     const content = requestBody.content || {};
-    const mediaType = Object.keys(content)[0] || "application/json";
+    const mediaType = Object.keys(content)[0] || 'application/json';
     const schema = content[mediaType]?.schema;
 
     return {
-      description: requestBody.description || "",
+      description: requestBody.description || '',
       required: requestBody.required || false,
       mediaType,
-      schema
+      schema,
     };
   }
 
   // --- Swagger 2.0 ---
   if (operation.parameters) {
-    const bodyParam = operation.parameters.find((p: any) => p.in === "body");
+    const bodyParam = operation.parameters.find((p: any) => p.in === 'body');
     if (bodyParam) {
       let schema = bodyParam.schema;
 
@@ -30,11 +30,12 @@ export function getRequestBody(pathItem: any, method: string, spec: any) {
       }
 
       return {
-        description: bodyParam.description || "",
+        description: bodyParam.description || '',
         required: bodyParam.required || false,
-        mediaType: (operation.consumes && operation.consumes[0]) || "application/json",
+        mediaType:
+          (operation.consumes && operation.consumes[0]) || 'application/json',
         schema,
-        produces: operation.produces || []
+        produces: operation.produces || [],
       };
     }
   }
@@ -42,7 +43,7 @@ export function getRequestBody(pathItem: any, method: string, spec: any) {
   return null;
 }
 
-export function getRefSchema(spec: any, ref: string){
-  const refKey = ref.replace("#/definitions/", "")
-  return spec.definitions[refKey]
+export function getRefSchema(spec: any, ref: string) {
+  const refKey = ref.replace('#/definitions/', '');
+  return spec.definitions[refKey];
 }

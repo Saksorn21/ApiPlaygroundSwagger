@@ -1,10 +1,10 @@
 // ---------- Swagger 2.0 / OpenAPI 2.0 Spec ----------
 export interface SwaggerSpec {
-  swagger: "2.0";
+  swagger: '2.0';
   info: InfoObject;
   host?: string;
   basePath?: string;
-  schemes?: ("http" | "https" | "ws" | "wss")[];
+  schemes?: ('http' | 'https' | 'ws' | 'wss')[];
   consumes?: string[];
   produces?: string[];
   paths: Record<string, PathItemObject>;
@@ -14,7 +14,7 @@ export interface SwaggerSpec {
   securityDefinitions?: Record<string, SecuritySchemeObject>;
   security?: SecurityRequirementObject[];
   tags?: TagObject[];
-  externalDocs?: ExternalDocsObject
+  externalDocs?: ExternalDocsObject;
 }
 
 // ---------- Info ----------
@@ -66,13 +66,13 @@ export interface OperationObject {
 // ---------- Parameters ----------
 export interface ParameterObject {
   name: string;
-  in: "query" | "header" | "path" | "formData" | "body";
+  in: 'query' | 'header' | 'path' | 'formData' | 'body';
   description?: string;
   required?: boolean;
   type?: string; // swagger2 uses type directly in parameter
   format?: string;
   schema?: SchemaObject; // for body parameters
-  items?: SchemaObject;  // for array types
+  items?: SchemaObject; // for array types
   enum?: string[];
 }
 
@@ -102,14 +102,14 @@ export interface SecurityRequirementObject {
   [name: string]: string[];
 }
 
-export type SecuritySchemeType = "apiKey" | "basic" | "oauth2";
+export type SecuritySchemeType = 'apiKey' | 'basic' | 'oauth2';
 
 export interface SecuritySchemeObject {
   type: SecuritySchemeType;
   description?: string;
-  name?: string;      // for apiKey
-  in?: "query" | "header"; // for apiKey
-  flow?: "implicit" | "password" | "application" | "accessCode"; // for oauth2
+  name?: string; // for apiKey
+  in?: 'query' | 'header'; // for apiKey
+  flow?: 'implicit' | 'password' | 'application' | 'accessCode'; // for oauth2
   authorizationUrl?: string;
   tokenUrl?: string;
   scopes?: Record<string, string>;

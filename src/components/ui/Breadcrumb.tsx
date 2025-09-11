@@ -1,20 +1,24 @@
-import React from 'react'
-import { ChevronRight, Home, Menu } from 'lucide-react'
+import React from 'react';
+import { ChevronRight, Home, Menu } from 'lucide-react';
 
 interface BreadcrumbItem {
-  label: string
-  href?: string
+  label: string;
+  href?: string;
 }
 
 interface BreadcrumbProps {
-  items: BreadcrumbItem[]
-  onToggleSidebar?: () => void
-  isMenusideber?: boolean
+  items: BreadcrumbItem[];
+  onToggleSidebar?: () => void;
+  isMenusideber?: boolean;
 }
 
-const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, onToggleSidebar, isMenusideber }) => {
+const Breadcrumb: React.FC<BreadcrumbProps> = ({
+  items,
+  onToggleSidebar,
+  isMenusideber,
+}) => {
   return (
-    <nav className="flex items-center p-4 border-b border-slate-900/10 lg:hidden dark:border-slate-50/[0.06]">
+    <nav className="flex items-center border-b border-slate-900/10 p-4 dark:border-slate-50/[0.06] lg:hidden">
       {/* ปุ่มสำหรับเปิด DocsSidebar - แสดงเฉพาะบนหน้าจอขนาดเล็ก */}
       {isMenusideber && onToggleSidebar && (
         <button
@@ -50,7 +54,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, onToggleSidebar, isMenus
         </React.Fragment>
       ))}
     </nav>
-  )
-}
+  );
+};
 
-export default Breadcrumb
+export default Breadcrumb;

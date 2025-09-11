@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
-type ThemeMode = "light" | "dark";
+type ThemeMode = 'light' | 'dark';
 
 export function useTheme(overrideTheme?: ThemeMode): ThemeMode {
-  const [theme, setTheme] = useState<ThemeMode>("light");
+  const [theme, setTheme] = useState<ThemeMode>('light');
 
   useEffect(() => {
     if (overrideTheme) {
@@ -12,18 +12,18 @@ export function useTheme(overrideTheme?: ThemeMode): ThemeMode {
     }
 
     // Auto detect จาก html class
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
+    const isDark = document.documentElement.classList.contains('dark');
+    setTheme(isDark ? 'dark' : 'light');
 
     // เฝ้าการเปลี่ยนแปลงของ class ที่ <html>
     const observer = new MutationObserver(() => {
-      const darkMode = document.documentElement.classList.contains("dark");
-      setTheme(darkMode ? "dark" : "light");
+      const darkMode = document.documentElement.classList.contains('dark');
+      setTheme(darkMode ? 'dark' : 'light');
     });
 
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"],
+      attributeFilter: ['class'],
     });
 
     return () => observer.disconnect();
