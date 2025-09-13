@@ -11,6 +11,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve('./src'),
+      path: 'path-browserify',
     },
   },
   server: {
@@ -18,4 +19,7 @@ export default defineConfig({
     port: 5000,
     allowedHosts: true,
   },
+  optimizeDeps: {
+    include: ['@apidevtools/json-schema-ref-parser'],
+  }
 });

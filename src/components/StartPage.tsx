@@ -22,7 +22,7 @@ import { useNotify } from '@/hooks/useNotify';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
 import { RJSFSchema } from '@rjsf/utils';
 import SpecOpenApi2 from '@/schemas/openapi-2.0.json';
-
+import axios from '@/utils/axios'
 // ... อื่น ๆ เช่น components, security ฯลฯ
 interface StartPageProps {
   theme: 'dark' | 'light';
@@ -119,16 +119,18 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   const [schema, setSchema] = useState<RJSFSchema | null>(null);
 
   useEffect(() => {
-    reloadSpec();
     const loadSchema = async () => {
-      const res = await fetch('../schemas/openapi-2.0.json');
-      const json = await res.json();
+      try {
+        const {data} = await axios.get(`buildapi/schema/v2`);
 
-      const deref = (await $RefParser.dereference(json)) as RJSFSchema;
-      setSchema(deref);
+        setSchema(data);
+      } catch (err) {
+        console.error("Error loading schema:", err);
+      }
     };
+    loadSchema()
+  
 
-    loadSchema();
 
     console.log(schema || 'no Schema');
     // if(selectedEndpoint?.path){
@@ -138,7 +140,8 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     //     const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
     //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     //   }
-  }, [selectedEndpoint, activeBuildTab, reloadSpec]);
+  }, [selectedEndpoint, activeBuildTab, reloadSpec ]);
+
   const infoSchema: RJSFSchema =
     schema !== null
       ? (schema?.properties?.info as RJSFSchema)
@@ -199,7 +202,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
           </div>
         </div>
         <DragDrop />
-
+        {schema && JSON.stringify(schema)}
         {/* File Importer */}
         <SpecImporter theme={theme} />
 
@@ -266,7 +269,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               <div
                 className={`mb-2 flex border-b ${
                   theme === 'dark' ? 'border-gray-600' : 'border-gray-300'
-                }`}
+                }`} style={{ marginBottom: 16 }}
               >
                 <button
                   className={`px-3 py-1 ${
@@ -335,7 +338,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               )}
               {activeBuildTab === 'paths' && (
                 <Form
-                  schema={SpecOpenApi2}
+                  schema={SchemaPathsTypeMap(spec)}
                   formData={spec.paths}
                   onChange={handleFormChange}
                   validator={validator}

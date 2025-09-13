@@ -120,7 +120,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     'options',
     'head',
   ];
-
+  const uuid = () => crypto.randomUUID()
   const renderMethodsForPath = (path: string) => {
     if (!spec?.paths?.[path]) return null;
     return Object.keys(spec.paths[path] || {})
@@ -147,7 +147,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
       .split('/')
       .filter(Boolean)
       .map((part, idx) => (
-        <span key={idx} className={part.startsWith('{') ? 'text-gray-500' : ''}>
+        <span key={`${path}-${uuid()}-${part}`}
+          className={part.startsWith('{') ? 'text-gray-500' : ''}>
           /{part}
         </span>
       ));
@@ -188,7 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     const isDeprecated = spec?.paths?.[path]?.[method]?.deprecated;
     return (
       <div
-        key={`${path}-${method}`}
+        key={`${path}-${method}-${uuid()}`}
         className={`
           flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all duration-200
           ${
@@ -319,7 +320,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="flex-1 space-y-4 overflow-y-auto p-3">
           {Object.entries(groupedPaths).map(([groupKey, paths]) => (
             <div
-              key={groupKey}
+              key={groupKey + uuid()}
               className={`border-b pb-4 last:border-b-0 ${
                 theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
               }`}
