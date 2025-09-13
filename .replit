@@ -9,7 +9,7 @@ run = ["sh", "-c", "npm run dev"]
 
 [[ports]]
 localPort = 5000
-externalPort = 5000
+externalPort = 80
 
 [[ports]]
 localPort = 5001
@@ -20,5 +20,33 @@ localPort = 5173
 externalPort = 80
 exposeLocalhost = true
 
+[[ports]]
+localPort = 32777
+externalPort = 3001
+
 [agent]
 expertMode = true
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Development Server"
+
+[[workflows.workflow]]
+name = "Development Server"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm run dev"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"

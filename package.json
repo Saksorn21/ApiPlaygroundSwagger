@@ -17,8 +17,6 @@
     "@rjsf/mui": "6.0.0-beta.15",
     "@rjsf/shadcn": "6.0.0-beta.15",
     "@rjsf/validator-ajv8": "6.0.0-beta.15",
-    "ajv": "6.12.6",
-    "ajv-formats": "3.0.1",
     "axios": "1.11.0",
     "clsx": "2.1.1",
     "file-saver": "2.0.5",
