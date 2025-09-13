@@ -7,10 +7,13 @@ import { SchemaInfoTypeMap, SchemaPathsTypeMap } from '@/utils/formSchema';
 import DragDrop from '@/components/ui/DragDrop';
 import { defaultSpec } from '@/utils/defaultSpecV3';
 import { defaultSwagger2Spec as defaultSpecV2 } from '@/utils/defaultSpecV2';
-import validator from '@rjsf/validator-ajv8';
+import validate from '@rjsf/validator-ajv8';
 import clsx from 'clsx';
 import Form from '@rjsf/shadcn';
 import { JSONTree } from 'react-json-tree';
+import { useOpenApiSchema } from "@/hooks/useOpenApiSchema";
+import { parse } from "flatted";
+
 import ScrollToActiveTabButton from '@/components/ScrollToActiveTabButton';
 import { Sidebar } from '@/components/Sidebar';
 import Layout from '@/components/Layout';
@@ -19,11 +22,13 @@ import SelectBar, { type ApiOption } from '@/components/ui/SelectBar';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import { useNotify } from '@/hooks/useNotify';
-import $RefParser from '@apidevtools/json-schema-ref-parser';
+
 import { RJSFSchema } from '@rjsf/utils';
 import SpecOpenApi2 from '@/schemas/openapi-2.0.json';
 import axios from '@/utils/axios'
-// ... อื่น ๆ เช่น components, security ฯลฯ
+import Ajv from "ajv"
+import { JsonEditor } from 'json-edit-react'
+import addFormats from 'ajv-formats'
 interface StartPageProps {
   theme: 'dark' | 'light';
 }
@@ -60,6 +65,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     path: string;
     method: string;
   } | null>(null);
+  const [validator, setValidator] = useState<any>(null)
   const notify = useNotify(theme);
   const [testUi, setTestUi] = useState('');
   const spec = useApiSpecStore((state) => state.rawSpec);
@@ -67,7 +73,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   const StateError = useApiSpecStore((state) => state.error);
   const StateStatus = useApiSpecStore((state) => state.status);
   const resetSpec = useApiSpecStore((state) => state.reset);
-
+  const schemaOpenApi = useOpenApiSchema("v2")
   // ดึงเฉพาะส่วน info
 
   // ---------- Load Spec from URL ----------
@@ -117,22 +123,10 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     return options;
   };
   const [schema, setSchema] = useState<RJSFSchema | null>(null);
-
+  const ajv = new Ajv({ allErrors: true, schemaId: "id" });
+  addFormats(ajv)
   useEffect(() => {
-    const loadSchema = async () => {
-      try {
-        const {data} = await axios.get(`buildapi/schema/v2`);
-
-        setSchema(data);
-      } catch (err) {
-        console.error("Error loading schema:", err);
-      }
-    };
-    loadSchema()
-  
-
-
-    console.log(schema || 'no Schema');
+    
     // if(selectedEndpoint?.path){
     //   setActiveBuildTab('paths')
     // }
@@ -140,18 +134,27 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     //     const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
     //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     //   }
-  }, [selectedEndpoint, activeBuildTab, reloadSpec ]);
-
-  const infoSchema: RJSFSchema =
-    schema !== null
-      ? (schema?.properties?.info as RJSFSchema)
-      : SchemaInfoTypeMap(spec);
-
-  // ดึงเฉพาะ paths
-  const pathsSchema: RJSFSchema =
-    schema !== null
-      ? (schema?.properties?.paths as RJSFSchema)
-      : SchemaPathsTypeMap(spec);
+  }, [selectedEndpoint, activeBuildTab, reloadSpec]);
+  
+  
+  
+  const tabSchema = (() => {
+    switch(activeBuildTab.toLowerCase()) {
+      case "info": return schemaOpenApi.properties.info;
+      case "paths": return schemaOpenApi.properties.paths;
+      case "components": return schemaOpenApi.properties.definitions; // OpenAPI 2.0 ใช้ definitions
+    }
+  })()
+  const handleValidate = () => {
+    try {
+      const validate = ajv.compile(tabSchema);
+      const valid = validate(spec[activeBuildTab])
+      if (!valid) console.log("Validation errors:", validate.errors);
+      else console.log("Valid!");
+    } catch(err) {
+      console.error("Validation failed:", err);
+    }
+  }
   return (
     <Layout
       theme={theme}
@@ -202,11 +205,17 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
           </div>
         </div>
         <DragDrop />
-        {schema && JSON.stringify(schema)}
+        {schema && <p>{}</p> }
         {/* File Importer */}
         <SpecImporter theme={theme} />
-
+        <button
+          className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
+          onClick={handleValidate}
+        >
+          Validate Spec
+        </button>
         {/* Use Default */}
+        
         <button
           className="rounded bg-gray-600 px-4 py-2 text-white hover:bg-gray-700"
           onClick={handleUseDefaultV2}
@@ -228,6 +237,12 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
         </h2>
         {testUi && <div className="text-center">{testUi}</div>}
         {spec && StateStatus !== 'error' && (
+      <>
+        <JsonEditor 
+            data={spec}
+          
+            
+            />
           <JsonView
             src={spec}
             theme={theme === 'dark' ? 'atom' : 'github'}
@@ -260,6 +275,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               setTestUi(JSON.stringify(params));
             }}
           />
+      </>
         )}
         {/* Dynamic Form + Tabs */}
         {spec && StateStatus !== 'error' && (
@@ -331,17 +347,17 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               {activeBuildTab === 'info' && (
                 <Form
                   schema={SchemaInfoTypeMap(spec)}
-                  formData={spec}
+                  formData={spec.info}
                   onChange={handleFormChange}
-                  validator={validator}
+                  validator={validate}
                 />
               )}
               {activeBuildTab === 'paths' && (
                 <Form
                   schema={SchemaPathsTypeMap(spec)}
-                  formData={spec.paths}
+                  formData={spec}
                   onChange={handleFormChange}
-                  validator={validator}
+                  validator={SpecOpenApi2}
                 />
               )}
 
