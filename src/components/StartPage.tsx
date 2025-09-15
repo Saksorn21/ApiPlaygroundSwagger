@@ -9,7 +9,7 @@ import { defaultSpec } from '@/utils/defaultSpecV3';
 import { defaultSwagger2Spec as defaultSpecV2 } from '@/utils/defaultSpecV2';
 import validate from '@rjsf/validator-ajv8';
 import clsx from 'clsx';
-import Form from '@rjsf/semantic-ui';
+import Form from '@rjsf/shadcn';
 
 import { JSONTree } from 'react-json-tree';
 import { useOpenApiSchema } from "@/hooks/useOpenApiSchema";
@@ -35,7 +35,7 @@ addFormats(ajv);
 
 import { JsonEditor } from 'json-edit-react'
 
-
+import FormRjsf from '@/components/buildTabs/FormRjsf'
 interface StartPageProps {
   theme: 'dark' | 'light';
 }
@@ -332,25 +332,25 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
                 </button>
               </div>
               {activeBuildTab !== 'preview' && useSpec &&
-                <Form
-                  schema={tabSchema}
-                  formData={activeBuildTab === 'components'  ? useSpec ? useSpec['components'] : useSpec['definitions'] : spec || (useSpec && useSpec[activeBuildTab])}
-                  onChange={handleFormChange}
-                  validator={validate}
-                  onError={(error) => {
-                    error.map((m, idx) => {
-                    notify.error( '"' + m.property +'" '+ m.message)  
+                <FormRjsf
+                  spec={useSpec}
+                  activeTab={activeBuildTab}
+                  handleFormChange={handleFormChange}
+                  onError={(e) => {
+                    e.map((err, idx) => {
+                      notify.error(`'${err.property}' ${err.message}`)
                     })
                   }}
-                  uiSchema={uiSchema}
-                  
-                />
+                  />
               }
  
               {/* Preview Tree */}
               {activeBuildTab === 'preview' && (
                 <div className="mt-4">
                   <h3 className="font-semibold">Spec Preview</h3>
+                  <JsonEditor
+                    data={useSpec || spec}
+                    />
                   <JSONTree
                     data={useSpec || spec}
                     theme={jsonTreeTheme}

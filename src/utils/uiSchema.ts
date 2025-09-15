@@ -13,25 +13,17 @@ const uiSchema: UiSchema = {
     }
   },
   'ui:options': {
-    "semantic": {
-      "fluid": true,
-      "inverted": false,
-      "errorOptions": {
-        "size": "small",
-        "pointing": "above"
-      }
-    },
     //props: {
       //className: 'dark:bg-gray-800 bg-gray-100 p-4 rounded drop-shadow-md mb-4 bg-opacity-50'
       
     //},
     
-   // 'ui:field': {
-     // props: {
-       //   className: 'dark:bg-gray-800 bg-gray-100 p-4 rounded drop-shadow-md mb-4 bg-opacity-50',
-    //  },
+   'ui:field': {
+      props: {
+          className: 'dark:bg-gray-800 bg-gray-100 p-4 rounded drop-shadow-md mb-4 bg-opacity-50',
+     },
       
-   // },
+   },
   },
   
 paths: {
