@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import SpecImporter from '@/components/SpecImporter';
 import SpecExport from '@/components/SpecExport';
 import { useApiSpecStore, reloadSpec } from '@/store/apiSpecStore';
-import { SchemaInfoTypeMap, SchemaPathsTypeMap } from '@/utils/formSchema';
+import { SchemaTypeMap } from '@/utils/formSchema';
+import uiSchema from '@/utils/uiSchema'
 import DragDrop from '@/components/ui/DragDrop';
 import { defaultSpec } from '@/utils/defaultSpecV3';
 import { defaultSwagger2Spec as defaultSpecV2 } from '@/utils/defaultSpecV2';
 import validate from '@rjsf/validator-ajv8';
 import clsx from 'clsx';
-import Form from '@rjsf/shadcn';
+import Form from '@rjsf/semantic-ui';
+
 import { JSONTree } from 'react-json-tree';
 import { useOpenApiSchema } from "@/hooks/useOpenApiSchema";
 
@@ -20,8 +22,20 @@ import SelectBar, { type ApiOption } from '@/components/ui/SelectBar';
 import JsonView from 'react18-json-view';
 import 'react18-json-view/src/style.css';
 import { useNotify } from '@/hooks/useNotify';
+import Ajv from "ajv/dist/jtd"; // AJV v8
+import addFormats from "ajv-formats";
+import { OpenAPISpec, SwaggerSpec } from '@/types/openapi'
+
+
+
+const ajv = new Ajv({ allErrors: true });
+addFormats(ajv);
+
+// Compile schema
 
 import { JsonEditor } from 'json-edit-react'
+
+
 interface StartPageProps {
   theme: 'dark' | 'light';
 }
@@ -61,10 +75,11 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   const notify = useNotify(theme);
   const [testUi, setTestUi] = useState('');
   const spec = useApiSpecStore((state) => state.rawSpec);
+  const [useSpec, setUseSpec] = useState<OpenAPISpec | SwaggerSpec | null>(null)
   const setSpecState = useApiSpecStore((state) => state.setRawSpec);
   const StateError = useApiSpecStore((state) => state.error);
   const StateStatus = useApiSpecStore((state) => state.status);
-  const schemaOpenApi = useOpenApiSchema("v2")
+  const {schema, setSchema} = useOpenApiSchema("v2")
   // ดึงเฉพาะส่วน info
 
   // ---------- Load Spec from URL ----------
@@ -75,9 +90,10 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
       const res = await fetch(url);
       const data = await res.json();
       reloadSpec(data);
+      notify.success('Spec loaded successfully')
     } catch (err) {
       console.error(err);
-      alert('Failed to load spec from URL');
+      notify.error('Failed to load spec from URL');
     } finally {
       setIsLoading(false);
     }
@@ -116,7 +132,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   };
   // Removed custom AJV instance - using built-in validator from @rjsf/validator-ajv8 instead
   useEffect(() => {
-    
+    if (spec) return setUseSpec(spec)
     // if(selectedEndpoint?.path){
     //   setActiveBuildTab('paths')
     // }
@@ -124,20 +140,26 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     //     const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
     //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     //   }
-  }, [selectedEndpoint, activeBuildTab, reloadSpec]);
+  }, [selectedEndpoint, activeBuildTab, useSpec]);
   
   
   
   const tabSchema = (() => {
-    switch(activeBuildTab.toLowerCase()) {
-      case "info": return schemaOpenApi.properties.info;
-      case "paths": return schemaOpenApi.properties.paths;
-      case "components": return schemaOpenApi.properties.definitions; // OpenAPI 2.0 ใช้ definitions
+    switch(activeBuildTab) {
+      case "info": return SchemaTypeMap(useSpec, 'info')
+      case "paths": return SchemaTypeMap(useSpec, 'paths')
+      case "components": return SchemaTypeMap(useSpec, 'components')// OpenAPI 2.0 ใช้ definitions
+      default:
+        return SchemaTypeMap(useSpec, 'info')
     }
   })()
   const handleValidate = () => {
+    const validate = ajv.compile(tabSchema);
+    const valid = validate(spec[activeBuildTab]);
+    if (!valid) notify.error(JSON.stringify(validate.errors));
+    
     if (!spec || !tabSchema) {
-      console.error("No spec or schema available for validation");
+      notify.error("No spec or schema available for validation");
       return;
     }
     
@@ -147,18 +169,18 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
                           activeBuildTab === 'components' ? (spec as any).definitions || (spec as any).components : null;
       
       if (!currentData) {
-        console.error("No data available for validation");
+        notify.error("No data available for validation");
         return;
       }
       
       const result = validate.validateFormData(currentData, tabSchema);
       if (result.errors && result.errors.length > 0) {
-        console.log("Validation errors:", result.errors);
+        notify.error("Validation errors:"+JSON.stringify(result.errors));
       } else {
         console.log("Valid!");
       }
     } catch(err) {
-      console.error("Validation failed:", err);
+      notify.error("Validation failed:"+ JSON.stringify(err));
     }
   }
   return (
@@ -176,8 +198,9 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
           theme={theme}
           optionApi={spec ? apiOptions() : []}
         />
-
+  
         {/* Error Banner */}
+        {testUi && <div>{testUi}</div>}
         {StateStatus === 'error' && (
           <div className="rounded bg-red-600 p-3 font-semibold text-white">
             {StateError || 'Something went wrong loading the spec.'}
@@ -240,37 +263,11 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               ? `Build V${(spec as any).openapi}`
               : `Build V${(spec as any)?.swagger}`)}
         </h2>
-        {testUi && <div className="text-center">{testUi}</div>}
-        {spec && StateStatus !== 'error' && (
-      <>
-        <JsonEditor 
-            data={spec}
-          
-            
-            />
-          <JsonView
-            src={spec}
-            theme={theme === 'dark' ? 'atom' : 'github'}
-            collapsed={1}
-            collapseStringMode="directly"
-            collapseStringsAfterLength={20}
-            dark={theme === 'dark'}
-            editable
-            onEdit={(params) => {
-              const { indexOrName } = params;
-              if (indexOrName === 'openapi' || indexOrName === 'swagger') {
-                notify.error("You can't change the version of the spec");
-                return false;
-              }
-              setTestUi(JSON.stringify(params));
-            }}
-          />
-      </>
-        )}
+        
         {/* Dynamic Form + Tabs */}
         {spec && StateStatus !== 'error' && (
-          <div className="mt-4 space-y-4 rounded border p-4">
-            <div className="mt-4 space-y-4 rounded border p-4">
+          <div>
+            <div className="mt-4 space-y-4 rounded border p-3 dark:border-slate-700 dark:bg-slate-800">
               <h2 className="text-lg font-bold">Build / Edit Spec</h2>
               <div
                 className={`mb-2 flex border-b ${
@@ -334,32 +331,48 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
                   Spec Preview
                 </button>
               </div>
-              {activeBuildTab === 'info' && (
+              {activeBuildTab !== 'preview' && useSpec &&
                 <Form
-                  schema={SchemaInfoTypeMap(spec)}
-                  formData={spec.info}
+                  schema={tabSchema}
+                  formData={activeBuildTab === 'components'  ? useSpec ? useSpec['components'] : useSpec['definitions'] : spec || (useSpec && useSpec[activeBuildTab])}
                   onChange={handleFormChange}
                   validator={validate}
+                  onError={(error) => {
+                    error.map((m, idx) => {
+                    notify.error( '"' + m.property +'" '+ m.message)  
+                    })
+                  }}
+                  uiSchema={uiSchema}
+                  
                 />
-              )}
-              {activeBuildTab === 'paths' && (
-                <Form
-                  schema={SchemaPathsTypeMap(spec)}
-                  formData={spec}
-                  onChange={handleFormChange}
-                  validator={validate}
-                />
-              )}
-
+              }
+ 
               {/* Preview Tree */}
               {activeBuildTab === 'preview' && (
                 <div className="mt-4">
                   <h3 className="font-semibold">Spec Preview</h3>
                   <JSONTree
-                    data={spec}
+                    data={useSpec || spec}
                     theme={jsonTreeTheme}
                     invertTheme={false}
                     hideRoot={true}
+                  />
+                  <JsonView
+                    src={useSpec || spec}
+                    theme={theme === 'dark' ? 'atom' : 'github'}
+                    collapsed={1}
+                    collapseStringMode="directly"
+                    collapseStringsAfterLength={20}
+                    //dark={theme === 'dark'}
+                    editable
+                    onEdit={(params) => {
+                      const { indexOrName } = params;
+                      if (indexOrName === 'openapi' || indexOrName === 'swagger') {
+                        notify.error("You can't change the version of the spec");
+                        return false;
+                      }
+
+                    }}
                   />
                 </div>
               )}
@@ -374,7 +387,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
       </div>
 
       <Sidebar
-        spec={spec}
+        spec={useSpec ? useSpec : spec}
         onSelect={setSelectedEndpoint}
         theme={theme}
         isOpen={sidebarOpen}

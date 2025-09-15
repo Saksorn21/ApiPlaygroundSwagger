@@ -20,12 +20,17 @@ export const getBaseUrlFromSpec = (spec: any, specUrl: string) => {
   return new URL(specUrl).origin;
 };
 export const chackSpecVersion = (spec: any): string => {
-  if (!spec) return null;
+  if (!spec) return 'unknown';
   let version: string = spec.swagger || spec.openapi;
-  if (version && version.startsWith('2.')) {
+  // ^3\\.0\\.\\d(-.+)?$
+  const versionRegex = /^3\\.0\\.\\d(-.+)?$/;
+  
+  if (version && version.startsWith('2.0')) {
     version = 'swagger';
-  } else if (version && version.startsWith('3.')) {
+  } else if (version && version.startsWith("3.0")) {
     version = 'openapi3';
+  } else if (version && version.startsWith("3.1")) {
+    version = 'openapi31'
   }
   return version;
 };

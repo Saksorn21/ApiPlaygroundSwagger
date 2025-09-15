@@ -251,3 +251,4 @@ export interface SecurityScheme {
   bearerFormat?: string;
   flows?: any;
 }
+export type SwaggerSpec = SwaggerSpec 

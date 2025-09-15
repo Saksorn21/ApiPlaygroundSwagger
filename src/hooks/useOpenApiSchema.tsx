@@ -12,6 +12,7 @@ export const useOpenApiSchema = (version: string) => {
         const { data } = await axios.get(`/buildapi/schema/${version}`, {
           transformResponse: (res) => parse(res)
         });
+        
         setSchema(data);
       } catch (err) {
         console.error("Error loading schema:", err);
@@ -20,5 +21,5 @@ export const useOpenApiSchema = (version: string) => {
     loadSchema();
   }, [version]);
 
-  return schema;
+  return {schema, setSchema}
 };
