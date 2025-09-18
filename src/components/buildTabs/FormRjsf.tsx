@@ -22,6 +22,8 @@ const FormRjsf: FC<FormRjsfProps> = ({ spec, activeTab, handleFormChange, onErro
       setFormData(spec)
     }
   })
+  const schema = SchemaTypeMap(spec, activeTab)
+  console.log(schema)
   return (
     <>
       { activeTab !== 'preview' &&
@@ -31,11 +33,11 @@ const FormRjsf: FC<FormRjsfProps> = ({ spec, activeTab, handleFormChange, onErro
         validator={validator}
         onChange={handleFormChange}
         onError={onError}
-        formData={formData}
+        formData={spec}
         templates={{
           ObjectFieldTemplate
         }}
-        ref={formRef}
+        //ref={formRef}
         />
         }
       { activeTab === 'preview' && 

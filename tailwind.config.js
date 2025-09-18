@@ -7,6 +7,10 @@ export default {
   darkMode: ['class'],
   theme: {
   	extend: {
+      fontFamily: {
+        roboto: ['"Roboto Variable"', 'sans-serif'],
+        prompt: ['"Prompt"', 'sans-serif']
+      },
   		screens: {
   			portrait: {
   				raw: '(orientation: portrait)'

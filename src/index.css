@@ -1,7 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
+body {
+  font-family:  'Prompt','Roboto Variable',sans-serif
+}
 @layer base {
   :root {
     --radius: 0.5rem;

@@ -1,10 +1,14 @@
 import {
+  buttonId,
+  canExpand,
+  descriptionId,
   getTemplate,
   getUiOptions,
   titleId,
   StrictRJSFSchema,
   RJSFSchema,
   FormContextType,
+  ObjectFieldTemplatePropertyType,
   ObjectFieldTemplateProps,
 } from "@rjsf/utils"
 import {
@@ -14,24 +18,28 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion"
 import { Plus } from 'lucide-react'
-function ObjectFieldTemplate<
+export function ObjectFieldTemplate<
   T = any,
   S extends StrictRJSFSchema = RJSFSchema,
   F extends FormContextType = any
 >(props: ObjectFieldTemplateProps<T, S, F>) {
   const {
-    registry,
-    properties,
-    title,
     description,
-    uiSchema,
-    required,
-    schema,
-    idSchema,
+      title,
+      properties,
+      required,
+      uiSchema,
+      idSchema,
+      schema,
+      formData,
+      onAddClick,
+      disabled,
+      readonly,
+      registry,
   } = props
 
   const options = getUiOptions<T, S, F>(uiSchema)
-
+  
   const TitleFieldTemplate = getTemplate<
     "TitleFieldTemplate",
     T,
@@ -45,9 +53,13 @@ function ObjectFieldTemplate<
     S,
     F
   >("DescriptionFieldTemplate", registry, options)
-
+  const {
+    ButtonTemplates: { AddButton },
+  } = registry.templates;
+  
+  
   return (
-    <div className="border rounded-md p-4 space-y-4">
+    <div >
       {/* Title */}
       {title && (
         <TitleFieldTemplate
@@ -73,36 +85,31 @@ function ObjectFieldTemplate<
 
       {/* Properties → Render as Accordion */}
       <Accordion type="multiple" className="w-full space-y-2">
-        {properties.map((prop) => (
-          <AccordionItem key={prop.name} value={prop.name}>
-            <AccordionTrigger>{prop.name}</AccordionTrigger>
-            <AccordionContent className="space-y-2">
-              {prop.content}
+        {properties.map((prop: ObjectFieldTemplatePropertyType) => {
 
-              {/* ถ้าเป็น array/object จะมี add/remove */}
-              {prop.onDropPropertyClick && (
-            <button
-              type="button"
-              className="bg-blue-500 text-white px-2 py-1 rounded ml-2 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-              onClick={props.onAddClick(props.schema)}
-              >
-              <Plus className='size-4' />
-              remove
-            </button>
-              )}
-              {props.onAddClick && (
-            <button
-              type="button"
-              className="bg-blue-500 text-white px-2 py-1 rounded ml-2 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
-              onClick={props.onAddClick(schema)}
-              >
-              <Plus className='size-4' />
-              Add
-            </button>
-              )}
+
+      return(
+      
+          <AccordionItem key={prop.name } value={prop.name}>
+            <AccordionTrigger>{prop.name}
+           </AccordionTrigger>
+            <AccordionContent >
+              {prop.content}
             </AccordionContent>
           </AccordionItem>
-        ))}
+        )})}
+        {canExpand(schema, uiSchema, formData) ? (
+          <AddButton
+            id={buttonId<T>(idSchema, 'add')}
+
+            className="rjsf-object-property-expan bg-blue-500 text-white px-2 py-1 rounded ml-2 hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700"
+            onClick={onAddClick(schema)}
+            disabled={disabled || readonly}
+            registry={registry}
+            uiSchema={uiSchema}
+            />
+
+            ) : null}
       </Accordion>
     </div>
   )
