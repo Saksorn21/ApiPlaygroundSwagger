@@ -25,7 +25,7 @@ import { useNotify } from '@/hooks/useNotify';
 import Ajv from "ajv/dist/jtd"; // AJV v8
 import addFormats from "ajv-formats";
 import { OpenAPISpec, SwaggerSpec } from '@/types/openapi'
-
+import { useTranslation } from "react-i18next"
 
 
 const ajv = new Ajv({ allErrors: true });
@@ -62,6 +62,7 @@ const jsonTreeTheme = {
 // ... โค้ดด้านบนเหมือนเดิม ...
 
 const StartPage: React.FC<StartPageProps> = ({ theme }) => {
+  const { t } = useTranslation()
   const [url, setUrl] = useState('');
   const [activeBuildTab, setActiveBuildTab] = useState<
     'info' | 'paths' | 'components' | 'preview'

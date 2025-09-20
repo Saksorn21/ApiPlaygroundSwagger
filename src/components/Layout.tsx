@@ -3,6 +3,8 @@ import { Menu, X, Sun, MoonStar, ChevronDown } from 'lucide-react';
 import Breadcrumb from '@/components/ui/Breadcrumb';
 import { ThemedBox } from '@/components/ThemedBox';
 import ThemeToggle from '@/components/ThemeToggle';
+import LanguageSwitcherDrawer from '@/components/ui/LanguageSwitcherDrawer'
+import { useTranslation } from "react-i18next"
 interface LayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -20,6 +22,7 @@ const Layout: React.FC<LayoutProps> = ({
   menusideber,
   isMenusideber,
 }) => {
+  const { t } = useTranslation()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
@@ -125,6 +128,12 @@ const Layout: React.FC<LayoutProps> = ({
                   Switch theme
                 </label>
                 <ThemeToggle />
+              </div>
+                  <div className="flex items-center justify-between mt-2">
+                <label className="font-normal text-slate-700 dark:text-slate-400">
+                  {t('change_language')}
+                </label>
+                <LanguageSwitcherDrawer />
               </div>
             </div>
           </div>
