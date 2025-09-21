@@ -1,7 +1,8 @@
 // types/openapi.ts
-import { SwaggerSpec } from './swaggerSpec';
+import { SwaggerSpec as SwaggerSpec2 } from './swaggerSpec';
+import { OpenAPI,OpenAPIV3 , OpenAPIV2  } from 'openapi-types'
 // ---------- OpenAPI 3.x Spec ----------
-export interface OpenAPISpec {
+export interface OpenAPISpec extends OpenAPIV3.Document {
   openapi: string; // e.g. "3.0.3"
   info: InfoObject;
   servers?: ServerObject[];
@@ -251,4 +252,4 @@ export interface SecurityScheme {
   bearerFormat?: string;
   flows?: any;
 }
-export type SwaggerSpec = SwaggerSpec 
+export type SwaggerSpec = SwaggerSpec2 = OpenAPIV2.Document

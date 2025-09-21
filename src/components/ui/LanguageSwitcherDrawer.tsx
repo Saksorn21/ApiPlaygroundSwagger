@@ -6,6 +6,7 @@ import {
   DrawerClose,
   DrawerContent,
   DrawerDescription,
+  
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
@@ -15,8 +16,9 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -42,7 +44,8 @@ if (isMobile){
           <Languages className="size-4" /> {languages.find((l) => l.code === i18n.language)?.label ?? "Language"}
         </Button>
       </DrawerTrigger>
-      <DrawerContent className=" text-white">
+      <DrawerContent >
+        
         <DrawerHeader>
           <DrawerTitle>Select Language</DrawerTitle>
           <DrawerDescription>Choose your preferred language</DrawerDescription>
@@ -51,7 +54,7 @@ if (isMobile){
           {languages.map((lang) => (
             <Button
               key={lang.code}
-              variant={i18n.language === lang.code ? "default" : "outline"}
+              variant={i18n.language !== lang.code ? "ghost" : "outline"}
               onClick={() => changeLanguage(lang.code)}
               className="flex items-center justify-center gap-2"
             >
@@ -62,7 +65,7 @@ if (isMobile){
         </div>
         <DrawerFooter>
           <DrawerClose asChild>
-            <Button variant="secondary">Close</Button>
+            <Button variant="secondary" className='bg-red-300 text-black/50'>Close</Button>
           </DrawerClose>
         </DrawerFooter>
       </DrawerContent>
@@ -72,25 +75,24 @@ if (isMobile){
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="lg">
+        <Button variant="outline" size="lg" >
           <Languages className="size-4" /> {languages.find((l) => l.code === i18n.language)?.label ?? "Language"}
         </Button>
         </DropdownMenuTrigger>
       <DropdownMenuContent className="bg-white text-slate-700 " >
         <DropdownMenuLabel>Language</DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuRadioGroup value={i18n.language} onValueChange={changeLanguage} >
         {languages.map((lang) => {
       return (
-        <DropdownMenuItem
-          key={lang.code}
-          onClick={() => changeLanguage(lang.code)}
-          
+        <DropdownMenuRadioItem
+          value={lang.code}
           >            <span>{lang.flag}</span>
-          <span>{lang.label}</span></DropdownMenuItem>
+          <span>{lang.label}</span></DropdownMenuRadioItem>
       )
         })}
         
-        
+          </DropdownMenuRadioGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

@@ -2,13 +2,14 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import localforage from 'localforage';
+import { parserSpecAndValidate } from '@/utils'
 import {
   ApiSpecState,
   OpenAPISpec,
   Operation,
   ApiSpecActions,
 } from '@/types/openapi';
-import { SwaggerSpec } from '@/types/swaggerSpec';
+import { OpenAPI } from 'openapi-types';
 
 export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
   persist(
@@ -167,15 +168,21 @@ export const useApiSpecStore = create<ApiSpecState & ApiSpecActions>()(
 
 export const reloadSpec = async (newSpec: OpenAPISpec) => {
   const store = useApiSpecStore.getState();
-
+  const {spec, errors} = await parserSpecAndValidate(newSpec as OpenAPI.Document)
   // เก็บค่าเดิมบางส่วนไว้
   const oldAuth = store.auth;
   const oldRequestHeaders = store.request.headers;
 
   // สร้าง operations ใหม่จาก spec ใหม่
-  if ('openapi' in newSpec || 'swagger' in newSpec) {
+    if (errors !== null){
+      useApiSpecStore.setState({
+        ...store,
+        status: 'error',
+        error: errors.map(err => err.message).join(', ')
+      })
+    }
     const operations: Record<string, Operation> = {};
-    Object.entries(newSpec.paths ?? {}).forEach(([path, pathItem]) => {
+   spec ? Object.entries(spec.paths ?? {}).forEach(([path, pathItem]) => {
       Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
         if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
           const operationId = op.operationId || `${method}_${path}`;
@@ -190,25 +197,25 @@ export const reloadSpec = async (newSpec: OpenAPISpec) => {
           };
         }
       });
-    });
+    }) : null
 
     // อัปเดต store โดย merge กับค่าเดิมบางส่วน
     useApiSpecStore.setState({
-      rawSpec: newSpec,
-      info: newSpec.info ?? null,
-      servers: (newSpec.servers ?? []).map((s) => s.url),
+      rawSpec: spec,
+      info: spec.info ?? null,
+      servers: (spec.servers ?? []).map((s) => s.url),
       operations,
-      securitySchemes: newSpec.components?.securitySchemes ?? null,
+      securitySchemes: spec.components?.securitySchemes ?? null,
       auth: oldAuth, // เก็บ auth เดิม
       request: { ...store.request, headers: oldRequestHeaders }, // เก็บ headers เดิม
       status: 'reloaded',
       error: null,
     });
-  } else {
-    useApiSpecStore.setState({
-      ...store,
-      status: 'error',
-      error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x',
-    });
-  }
-};
+  // } else {
+  //   useApiSpecStore.setState({
+  //     ...store,
+  //     status: 'error',
+  //     error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x',
+  //   });
+  // }
+}

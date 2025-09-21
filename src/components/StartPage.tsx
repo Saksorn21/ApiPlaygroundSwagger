@@ -26,8 +26,7 @@ import Ajv from "ajv/dist/jtd"; // AJV v8
 import addFormats from "ajv-formats";
 import { OpenAPISpec, SwaggerSpec } from '@/types/openapi'
 import { useTranslation } from "react-i18next"
-
-
+import MonacoEditor from '@/components/MonacoEditor'
 const ajv = new Ajv({ allErrors: true });
 addFormats(ajv);
 
@@ -133,7 +132,11 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   };
   // Removed custom AJV instance - using built-in validator from @rjsf/validator-ajv8 instead
   useEffect(() => {
-    if (spec) return setUseSpec(spec)
+    
+      if (spec && !useSpec) {
+        setUseSpec(spec);
+      }
+
     // if(selectedEndpoint?.path){
     //   setActiveBuildTab('paths')
     // }
@@ -141,7 +144,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
     //     const el = document.getElementById(`root_paths_${selectedEndpoint.path}-${selectedEndpoint.method}`);
     //     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     //   }
-  }, [selectedEndpoint, activeBuildTab, useSpec]);
+  }, [selectedEndpoint, activeBuildTab, spec]);
   
   
   
@@ -264,6 +267,13 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               ? `Build V${(spec as any).openapi}`
               : `Build V${(spec as any)?.swagger}`)}
         </h2>
+        {spec && <MonacoEditor 
+                   code={useSpec || spec} 
+                   onChange={(value) => setUseSpec(value)}
+                   theme={theme}
+                   
+                   />
+        }
         
         {/* Dynamic Form + Tabs */}
         {spec && StateStatus !== 'error' && (

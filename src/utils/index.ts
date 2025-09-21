@@ -1,5 +1,47 @@
 export * from './getRequestBody';
+import SwaggerParser from "@apidevtools/swagger-parser";
+import OpenAPIValidator from "openapi-schema-validator"
+import {
+  
+  OpenAPISpec,
+  SwaggerSpec,
+} from '@/types/openapi';
+import { ErrorObject } from 'ajv'
+import { OpenAPI,OpenAPIV2, OpenAPIV3  } from 'openapi-types'
+interface ParserResult {
+  spec: OpenAPI.Document | null
+  errors: ErrorObject[] | null
+}
+function detectSpecVersion(spec: OpenAPI.Document): 2 | 3 {
+  if ((spec as OpenAPIV2.Document).swagger) return 2
+  if ((spec as OpenAPIV3.Document).openapi) return 3
+  throw new Error("Unknown OpenAPI version")
+}
+export const parserSpecAndValidate = async (
+  spec: OpenAPI.Document
+): Promise<ParserResult> => {
+  let parser: OpenAPI.Document | null = null
+  let errors: ParserResult['errors'] = null
+ let version: 2 | 3 = detectSpecVersion(spec)
+  try {
+    parser = await SwaggerParser.dereference(spec)
+    if(parser !== null){
+      if (parser.swagger as OpenAPIV2.Document) version = 2
+    }
+console.log('parser', parser)
+    const validator = new OpenAPIValidator({ version: version })
+    const result = validator.validate(parser)
 
+    if (result.errors.length) {
+      errors = result.errors
+      console.error("Spec validation errors:", result.errors)
+    }
+  } catch (error: unknown) {
+    console.error("Error parsing spec:", error)
+  }
+
+  return { spec: parser, errors }
+}
 export const getBaseUrlFromSpec = (spec: any, specUrl: string) => {
   if (spec.swagger && spec.swagger.startsWith('2.')) {
     // Swagger v2

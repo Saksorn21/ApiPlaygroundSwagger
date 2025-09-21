@@ -35,7 +35,7 @@ const SpecImporter: React.FC<{ theme: 'dark' | 'light' }> = ({ theme }) => {
       }
     } catch (err) {
       console.error(err);
-      notify.error('Import spec ไม่สำเร็จ');
+      notify.error('Import spec ไม่สำเร็จ'+ JSON.stringify(err));
     }
   };
 

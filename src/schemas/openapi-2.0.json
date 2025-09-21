@@ -1,9 +1,13 @@
 {
   "title": "A JSON Schema for Swagger 2.0 API.",
-  "id": "http://swagger.io/v2/schema.json#",
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$id": "http://swagger.io/v2/schema.json#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "required": ["swagger", "info", "paths"],
+  "required": [
+    "swagger",
+    "info",
+    "paths"
+  ],
   "additionalProperties": false,
   "patternProperties": {
     "^x-": {
@@ -13,7 +17,9 @@
   "properties": {
     "swagger": {
       "type": "string",
-      "enum": ["2.0"],
+      "enum": [
+        "2.0"
+      ],
       "description": "The Swagger version of this document."
     },
     "info": {
@@ -34,19 +40,11 @@
     },
     "consumes": {
       "description": "A list of MIME types accepted by the API.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/mediaTypeList"
-        }
-      ]
+      "$ref": "#/definitions/mediaTypeList"
     },
     "produces": {
       "description": "A list of MIME types the API can produce.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/mediaTypeList"
-        }
-      ]
+      "$ref": "#/definitions/mediaTypeList"
     },
     "paths": {
       "$ref": "#/definitions/paths"
@@ -81,7 +79,10 @@
     "info": {
       "type": "object",
       "description": "General information about the API.",
-      "required": ["version", "title"],
+      "required": [
+        "version",
+        "title"
+      ],
       "additionalProperties": false,
       "patternProperties": {
         "^x-": {
@@ -141,7 +142,9 @@
     },
     "license": {
       "type": "object",
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "additionalProperties": false,
       "properties": {
         "name": {
@@ -192,13 +195,15 @@
       "additionalProperties": {
         "$ref": "#/definitions/response"
       },
-      "description": "One or more JSON representations for responses"
+      "description": "One or more JSON representations for parameters"
     },
     "externalDocs": {
       "type": "object",
       "additionalProperties": false,
       "description": "information about external documentation",
-      "required": ["url"],
+      "required": [
+        "url"
+      ],
       "properties": {
         "description": {
           "type": "string"
@@ -224,7 +229,9 @@
     },
     "operation": {
       "type": "object",
-      "required": ["responses"],
+      "required": [
+        "responses"
+      ],
       "additionalProperties": false,
       "patternProperties": {
         "^x-": {
@@ -256,19 +263,11 @@
         },
         "produces": {
           "description": "A list of MIME types the API can produce.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/mediaTypeList"
-            }
-          ]
+          "$ref": "#/definitions/mediaTypeList"
         },
         "consumes": {
           "description": "A list of MIME types the API can consume.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/mediaTypeList"
-            }
-          ]
+          "$ref": "#/definitions/mediaTypeList"
         },
         "parameters": {
           "$ref": "#/definitions/parametersList"
@@ -361,7 +360,9 @@
     },
     "response": {
       "type": "object",
-      "required": ["description"],
+      "required": [
+        "description"
+      ],
       "properties": {
         "description": {
           "type": "string"
@@ -399,11 +400,19 @@
     "header": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["string", "number", "integer", "boolean", "array"]
+          "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "array"
+          ]
         },
         "format": {
           "type": "string"
@@ -470,7 +479,11 @@
     },
     "bodyParameter": {
       "type": "object",
-      "required": ["name", "in", "schema"],
+      "required": [
+        "name",
+        "in",
+        "schema"
+      ],
       "patternProperties": {
         "^x-": {
           "$ref": "#/definitions/vendorExtension"
@@ -488,7 +501,9 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": ["body"]
+          "enum": [
+            "body"
+          ]
         },
         "required": {
           "type": "boolean",
@@ -517,7 +532,9 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": ["header"]
+          "enum": [
+            "header"
+          ]
         },
         "description": {
           "type": "string",
@@ -529,7 +546,13 @@
         },
         "type": {
           "type": "string",
-          "enum": ["string", "number", "boolean", "integer", "array"]
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "integer",
+            "array"
+          ]
         },
         "format": {
           "type": "string"
@@ -597,7 +620,9 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": ["query"]
+          "enum": [
+            "query"
+          ]
         },
         "description": {
           "type": "string",
@@ -614,7 +639,13 @@
         },
         "type": {
           "type": "string",
-          "enum": ["string", "number", "boolean", "integer", "array"]
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "integer",
+            "array"
+          ]
         },
         "format": {
           "type": "string"
@@ -682,7 +713,9 @@
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": ["formData"]
+          "enum": [
+            "formData"
+          ]
         },
         "description": {
           "type": "string",
@@ -699,7 +732,14 @@
         },
         "type": {
           "type": "string",
-          "enum": ["string", "number", "boolean", "integer", "array", "file"]
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "integer",
+            "array",
+            "file"
+          ]
         },
         "format": {
           "type": "string"
@@ -758,17 +798,23 @@
           "$ref": "#/definitions/vendorExtension"
         }
       },
-      "required": ["required"],
+      "required": [
+        "required"
+      ],
       "properties": {
         "required": {
           "type": "boolean",
-          "enum": [true],
+          "enum": [
+            true
+          ],
           "description": "Determines whether or not this parameter is required or optional."
         },
         "in": {
           "type": "string",
           "description": "Determines the location of the parameter.",
-          "enum": ["path"]
+          "enum": [
+            "path"
+          ]
         },
         "description": {
           "type": "string",
@@ -780,7 +826,13 @@
         },
         "type": {
           "type": "string",
-          "enum": ["string", "number", "boolean", "integer", "array"]
+          "enum": [
+            "string",
+            "number",
+            "boolean",
+            "integer",
+            "array"
+          ]
         },
         "format": {
           "type": "string"
@@ -834,7 +886,11 @@
     },
     "nonBodyParameter": {
       "type": "object",
-      "required": ["name", "in", "type"],
+      "required": [
+        "name",
+        "in",
+        "type"
+      ],
       "oneOf": [
         {
           "$ref": "#/definitions/headerParameterSubSchema"
@@ -876,58 +932,58 @@
           "type": "string"
         },
         "title": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/title"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/title"
         },
         "description": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/description"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/description"
         },
         "default": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/default"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/default"
         },
         "multipleOf": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/multipleOf"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/multipleOf"
         },
         "maximum": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/maximum"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/maximum"
         },
         "exclusiveMaximum": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/exclusiveMaximum"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/exclusiveMaximum"
         },
         "minimum": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/minimum"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/minimum"
         },
         "exclusiveMinimum": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/exclusiveMinimum"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/exclusiveMinimum"
         },
         "maxLength": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeInteger"
         },
         "minLength": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeIntegerDefault0"
         },
         "pattern": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/pattern"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/pattern"
         },
         "maxItems": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeInteger"
         },
         "minItems": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeIntegerDefault0"
         },
         "uniqueItems": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/uniqueItems"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/uniqueItems"
         },
         "maxProperties": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeInteger"
         },
         "minProperties": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeIntegerDefault0"
         },
         "required": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/stringArray"
         },
         "enum": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/enum"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/enum"
         },
         "additionalProperties": {
           "anyOf": [
@@ -941,7 +997,7 @@
           "default": {}
         },
         "type": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/type"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/type"
         },
         "items": {
           "anyOf": [
@@ -997,26 +1053,30 @@
           "$ref": "#/definitions/vendorExtension"
         }
       },
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "format": {
           "type": "string"
         },
         "title": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/title"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/title"
         },
         "description": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/description"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/description"
         },
         "default": {
-          "$ref": "http://json-schema.org/draft-04/schema#/properties/default"
+          "$ref": "http://json-schema.org/draft-07/schema#/properties/default"
         },
         "required": {
-          "$ref": "http://json-schema.org/draft-04/schema#/definitions/stringArray"
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/stringArray"
         },
         "type": {
           "type": "string",
-          "enum": ["file"]
+          "enum": [
+            "file"
+          ]
         },
         "readOnly": {
           "type": "boolean",
@@ -1035,7 +1095,13 @@
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["string", "number", "integer", "boolean", "array"]
+          "enum": [
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "array"
+          ]
         },
         "format": {
           "type": "string"
@@ -1140,7 +1206,9 @@
     "tag": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["name"],
+      "required": [
+        "name"
+      ],
       "properties": {
         "name": {
           "type": "string"
@@ -1186,11 +1254,15 @@
     "basicAuthenticationSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type"],
+      "required": [
+        "type"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["basic"]
+          "enum": [
+            "basic"
+          ]
         },
         "description": {
           "type": "string"
@@ -1205,18 +1277,27 @@
     "apiKeySecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "name", "in"],
+      "required": [
+        "type",
+        "name",
+        "in"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["apiKey"]
+          "enum": [
+            "apiKey"
+          ]
         },
         "name": {
           "type": "string"
         },
         "in": {
           "type": "string",
-          "enum": ["header", "query"]
+          "enum": [
+            "header",
+            "query"
+          ]
         },
         "description": {
           "type": "string"
@@ -1231,15 +1312,23 @@
     "oauth2ImplicitSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "flow", "authorizationUrl"],
+      "required": [
+        "type",
+        "flow",
+        "authorizationUrl"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["oauth2"]
+          "enum": [
+            "oauth2"
+          ]
         },
         "flow": {
           "type": "string",
-          "enum": ["implicit"]
+          "enum": [
+            "implicit"
+          ]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1261,15 +1350,23 @@
     "oauth2PasswordSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "flow", "tokenUrl"],
+      "required": [
+        "type",
+        "flow",
+        "tokenUrl"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["oauth2"]
+          "enum": [
+            "oauth2"
+          ]
         },
         "flow": {
           "type": "string",
-          "enum": ["password"]
+          "enum": [
+            "password"
+          ]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1291,15 +1388,23 @@
     "oauth2ApplicationSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "flow", "tokenUrl"],
+      "required": [
+        "type",
+        "flow",
+        "tokenUrl"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["oauth2"]
+          "enum": [
+            "oauth2"
+          ]
         },
         "flow": {
           "type": "string",
-          "enum": ["application"]
+          "enum": [
+            "application"
+          ]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1321,15 +1426,24 @@
     "oauth2AccessCodeSecurity": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "flow", "authorizationUrl", "tokenUrl"],
+      "required": [
+        "type",
+        "flow",
+        "authorizationUrl",
+        "tokenUrl"
+      ],
       "properties": {
         "type": {
           "type": "string",
-          "enum": ["oauth2"]
+          "enum": [
+            "oauth2"
+          ]
         },
         "flow": {
           "type": "string",
-          "enum": ["accessCode"]
+          "enum": [
+            "accessCode"
+          ]
         },
         "scopes": {
           "$ref": "#/definitions/oauth2Scopes"
@@ -1386,68 +1500,86 @@
       "description": "The transfer protocol of the API.",
       "items": {
         "type": "string",
-        "enum": ["http", "https", "ws", "wss"]
+        "enum": [
+          "http",
+          "https",
+          "ws",
+          "wss"
+        ]
       },
       "uniqueItems": true
     },
     "collectionFormat": {
       "type": "string",
-      "enum": ["csv", "ssv", "tsv", "pipes"],
+      "enum": [
+        "csv",
+        "ssv",
+        "tsv",
+        "pipes"
+      ],
       "default": "csv"
     },
     "collectionFormatWithMulti": {
       "type": "string",
-      "enum": ["csv", "ssv", "tsv", "pipes", "multi"],
+      "enum": [
+        "csv",
+        "ssv",
+        "tsv",
+        "pipes",
+        "multi"
+      ],
       "default": "csv"
     },
     "title": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/title"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/title"
     },
     "description": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/description"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/description"
     },
     "default": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/default"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/default"
     },
     "multipleOf": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/multipleOf"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/multipleOf"
     },
     "maximum": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/maximum"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/maximum"
     },
     "exclusiveMaximum": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/exclusiveMaximum"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/exclusiveMaximum"
     },
     "minimum": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/minimum"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/minimum"
     },
     "exclusiveMinimum": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/exclusiveMinimum"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/exclusiveMinimum"
     },
     "maxLength": {
-      "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger"
+      "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeInteger"
     },
     "minLength": {
-      "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0"
+      "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeIntegerDefault0"
     },
     "pattern": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/pattern"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/pattern"
     },
     "maxItems": {
-      "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveInteger"
+      "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeInteger"
     },
     "minItems": {
-      "$ref": "http://json-schema.org/draft-04/schema#/definitions/positiveIntegerDefault0"
+      "$ref": "http://json-schema.org/draft-07/schema#/definitions/nonNegativeIntegerDefault0"
     },
     "uniqueItems": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/uniqueItems"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/uniqueItems"
     },
     "enum": {
-      "$ref": "http://json-schema.org/draft-04/schema#/properties/enum"
+      "$ref": "http://json-schema.org/draft-07/schema#/properties/enum"
     },
     "jsonReference": {
       "type": "object",
-      "required": ["$ref"],
+      "required": [
+        "$ref"
+      ],
       "additionalProperties": false,
       "properties": {
         "$ref": {
