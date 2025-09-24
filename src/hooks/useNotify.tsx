@@ -3,34 +3,36 @@ import toast, { ToastOptions } from 'react-hot-toast';
 
 type Theme = 'light' | 'dark';
 
-export function useNotify(theme: Theme = 'light') {
+export function useNotify(theme?: Theme) {
   // กำหนด style ของ toast ตาม theme
+  const themeClass = theme || document.documentElement.classList.contains('dark') ? 'dark' : 'light'
+    //getComputedStyle(document.documentElement.classList.contains('dark') ? 'dark' : 'light')
   const baseStyle: ToastOptions = {
     style: {
-      background: theme === 'dark' ? '#333' : '#fff',
-      color: theme === 'dark' ? '#fff' : '#000',
-      border: theme === 'dark' ? '1px solid #444' : '1px solid #ddd',
+      background: themeClass === 'dark' ? '#333' : '#fff',
+      color: themeClass === 'dark' ? '#fff' : '#000',
+      border: themeClass === 'dark' ? '1px solid #444' : '1px solid #ddd',
     },
   };
 
   const success = useCallback(
     (msg: string) => toast.success(msg, baseStyle),
-    [theme],
+    [themeClass],
   );
 
   const error = useCallback(
     (msg: string) => toast.error(msg, baseStyle),
-    [theme],
+    [themeClass],
   );
 
-  const info = useCallback((msg: string) => toast(msg, baseStyle), [theme]);
+  const info = useCallback((msg: string) => toast(msg, baseStyle), [themeClass]);
 
   const promise = useCallback(
     <T,>(
       promise: Promise<T>,
       msgs: { loading: string; success: string; error: string },
     ) => toast.promise(promise, msgs, baseStyle),
-    [theme],
+    [themeClass],
   );
 
   return { success, error, info, promise };

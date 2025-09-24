@@ -182,7 +182,8 @@ export const reloadSpec = async (newSpec: OpenAPISpec) => {
       })
     }
     const operations: Record<string, Operation> = {};
-   spec ? Object.entries(spec.paths ?? {}).forEach(([path, pathItem]) => {
+   if (spec){
+     Object.entries(spec.paths ?? {}).forEach(([path, pathItem]) => {
       Object.entries(pathItem).forEach(([method, op]: [string, any]) => {
         if (['get', 'post', 'put', 'delete', 'patch'].includes(method)) {
           const operationId = op.operationId || `${method}_${path}`;
@@ -197,12 +198,12 @@ export const reloadSpec = async (newSpec: OpenAPISpec) => {
           };
         }
       });
-    }) : null
+    }) 
 
     // อัปเดต store โดย merge กับค่าเดิมบางส่วน
     useApiSpecStore.setState({
       rawSpec: spec,
-      info: spec.info ?? null,
+      info: spec && (spec.info ?? null),
       servers: (spec.servers ?? []).map((s) => s.url),
       operations,
       securitySchemes: spec.components?.securitySchemes ?? null,
@@ -210,7 +211,13 @@ export const reloadSpec = async (newSpec: OpenAPISpec) => {
       request: { ...store.request, headers: oldRequestHeaders }, // เก็บ headers เดิม
       status: 'reloaded',
       error: null,
-    });
+    }) } else {
+  useApiSpecStore.setState({
+         ...store,
+         status: 'error',
+         error: 'Invalid spec format - must be OpenAPI 3.x or Swagger 2.x',
+       })
+     }
   // } else {
   //   useApiSpecStore.setState({
   //     ...store,

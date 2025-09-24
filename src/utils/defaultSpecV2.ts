@@ -6,8 +6,8 @@ export const defaultSwagger2Spec: SwaggerSpec = {
     description: '',
     version: '1.0.0',
   },
-  host: '',
-  basePath: '/',
+  host: "localhost",
+  basePath: "/example",
   schemes: ['https'],
   consumes: ['application/json'],
   produces: ['application/json'],
@@ -18,5 +18,8 @@ export const defaultSwagger2Spec: SwaggerSpec = {
   securityDefinitions: {},
   security: [],
   tags: [],
-  externalDocs: { url: '' },
+  "externalDocs": {
+    "description": "Find out more",
+    "url": "https://example.com/docs"
+  }
 };

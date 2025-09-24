@@ -1,5 +1,5 @@
 export * from './getRequestBody';
-import SwaggerParser from "@apidevtools/swagger-parser";
+import * as SwaggerParser from "@apidevtools/swagger-parser";
 import OpenAPIValidator from "openapi-schema-validator"
 import {
   
@@ -11,6 +11,7 @@ import { OpenAPI,OpenAPIV2, OpenAPIV3  } from 'openapi-types'
 interface ParserResult {
   spec: OpenAPI.Document | null
   errors: ErrorObject[] | null
+  version: 2 | 3 | null
 }
 function detectSpecVersion(spec: OpenAPI.Document): 2 | 3 {
   if ((spec as OpenAPIV2.Document).swagger) return 2
@@ -21,15 +22,18 @@ export const parserSpecAndValidate = async (
   spec: OpenAPI.Document
 ): Promise<ParserResult> => {
   let parser: OpenAPI.Document | null = null
-  let errors: ParserResult['errors'] = null
- let version: 2 | 3 = detectSpecVersion(spec)
+  let errors: ParserResult["errors"] = null
+  let version: 2 | 3 | null = null
+
   try {
-    parser = await SwaggerParser.dereference(spec)
-    if(parser !== null){
-      if (parser.swagger as OpenAPIV2.Document) version = 2
+    if (!spec) {
+      throw new Error("spec is undefined or null")
     }
-console.log('parser', parser)
-    const validator = new OpenAPIValidator({ version: version })
+    version = detectSpecVersion(spec)
+    parser = await SwaggerParser.dereference(spec) as OpenAPI.Document
+    console.log("parser keys:", Object.keys(parser))
+    
+    const validator = new OpenAPIValidator({ version })
     const result = validator.validate(parser)
 
     if (result.errors.length) {
@@ -40,7 +44,7 @@ console.log('parser', parser)
     console.error("Error parsing spec:", error)
   }
 
-  return { spec: parser, errors }
+  return { spec: parser, errors, version }
 }
 export const getBaseUrlFromSpec = (spec: any, specUrl: string) => {
   if (spec.swagger && spec.swagger.startsWith('2.')) {

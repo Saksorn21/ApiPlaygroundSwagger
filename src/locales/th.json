@@ -3,6 +3,11 @@
     "welcome": "ยินดีต้อนรับ",
     "greeting": "สวัสดี เป็นอย่างไรบ้าง?",
     "about": "เกี่ยวกับเรา",
-    "change_language": "ภาษา"
+    "change_language": "ภาษา",
+    "openapi":{
+      "info": {
+        "title": "หังข้อ"
+      }
+    }
   }
 }

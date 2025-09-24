@@ -10,7 +10,7 @@ import { defaultSwagger2Spec as defaultSpecV2 } from '@/utils/defaultSpecV2';
 import validate from '@rjsf/validator-ajv8';
 import clsx from 'clsx';
 import Form from '@rjsf/shadcn';
-
+import ApiOverview from '@/components/apiSpec/ApiOverview'
 import { JSONTree } from 'react-json-tree';
 import { useOpenApiSchema } from "@/hooks/useOpenApiSchema";
 
@@ -133,7 +133,7 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
   // Removed custom AJV instance - using built-in validator from @rjsf/validator-ajv8 instead
   useEffect(() => {
     
-      if (spec && !useSpec) {
+      if (spec) {
         setUseSpec(spec);
       }
 
@@ -267,13 +267,13 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
               ? `Build V${(spec as any).openapi}`
               : `Build V${(spec as any)?.swagger}`)}
         </h2>
-        {spec && <MonacoEditor 
+        {/* {spec && <MonacoEditor 
                    code={useSpec || spec} 
                    onChange={(value) => setUseSpec(value)}
                    theme={theme}
                    
                    />
-        }
+        } */}
         
         {/* Dynamic Form + Tabs */}
         {spec && StateStatus !== 'error' && (
@@ -342,6 +342,13 @@ const StartPage: React.FC<StartPageProps> = ({ theme }) => {
                   Spec Preview
                 </button>
               </div>
+              {activeBuildTab === 'info' && useSpec && <ApiOverview spec={useSpec} onSpecChange={(e) =>setUseSpec(e)} onSpecError={(e) => {
+            e.map((err, idx) => {
+              notify.error(`'${err.property}' ${err.message}`)
+            })
+              }}
+                                                         />
+                                                  }
               {activeBuildTab !== 'preview' && useSpec &&
                 <FormRjsf
                   spec={useSpec}

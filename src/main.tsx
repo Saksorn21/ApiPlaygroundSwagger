@@ -15,6 +15,8 @@ import '@fontsource/prompt/700.css';
 import '@fontsource/prompt/800.css';
 import '@fontsource/prompt/900.css';
 import "./i18n"
+import { Buffer } from "buffer";
+(window as any).Buffer = Buffer;
 const rootElement = document.getElementById('root') as HTMLElement;
 const root = ReactDOM.createRoot(rootElement);
 

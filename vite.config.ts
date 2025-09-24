@@ -7,6 +7,9 @@ import path from 'path';
  * @see https://vitejs.dev/config/
  */
 export default defineConfig({
+  build: {
+    sourcemap: true
+  },
   plugins: [react(), eslintPlugin()],
   resolve: {
     alias: {
@@ -20,6 +23,6 @@ export default defineConfig({
     allowedHosts: true,
   },
   optimizeDeps: {
-    include: ['@apidevtools/json-schema-ref-parser'],
+    include: ['@apidevtools/swagger-parser'],
   }
 });

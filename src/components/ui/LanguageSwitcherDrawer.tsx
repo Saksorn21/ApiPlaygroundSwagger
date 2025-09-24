@@ -44,7 +44,7 @@ if (isMobile){
           <Languages className="size-4" /> {languages.find((l) => l.code === i18n.language)?.label ?? "Language"}
         </Button>
       </DrawerTrigger>
-      <DrawerContent >
+      <DrawerContent className='z-[51]' >
         
         <DrawerHeader>
           <DrawerTitle>Select Language</DrawerTitle>
@@ -54,7 +54,7 @@ if (isMobile){
           {languages.map((lang) => (
             <Button
               key={lang.code}
-              variant={i18n.language !== lang.code ? "ghost" : "outline"}
+              variant={i18n.language === lang.code ? "default" : "outline"}
               onClick={() => changeLanguage(lang.code)}
               className="flex items-center justify-center gap-2"
             >

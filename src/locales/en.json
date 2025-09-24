@@ -3,6 +3,11 @@
     "welcome": "Welcome",
     "greeting": "Hello, how are you?",
     "about": "About Us",
-    "change_language": "Language"
+    "change_language": "Language",
+    "openapi":{
+      "info": {
+        "title": "Title"
+      }
+    }
   }
 }
