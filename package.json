@@ -29,7 +29,7 @@
     "@rjsf/validator-ajv8": "6.0.0-beta.15",
     "ajv": "8.17.1",
     "ajv-formats": "3.0.1",
-    "axios": "1.11.0",
+    "axios": "1.12.2",
     "buffer": "6.0.3",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
@@ -71,7 +71,7 @@
     "zustand": "5.0.8"
   },
   "devDependencies": {
-    "@nabla/vite-plugin-eslint": "2.0.4",
+    "@nabla/vite-plugin-eslint": "2.0.6",
     "@tailwindcss/postcss": "4.1.13",
     "@types/eslint": "8.56.12",
     "@types/file-saver": "2.0.7",
@@ -82,7 +82,7 @@
     "@types/react-i18next": "7.8.3",
     "@typescript-eslint/eslint-plugin": "6.13.1",
     "@typescript-eslint/parser": "6.13.1",
-    "@vitejs/plugin-react-swc": "3.7.0",
+    "@vitejs/plugin-react-swc": "3.11.0",
     "autoprefixer": "10.4.14",
     "eslint": "8.57.1",
     "eslint-config-prettier": "9.1.0",
@@ -98,6 +98,6 @@
     "tailwind-scrollbar": "4.0.2",
     "tailwindcss": "4.1.13",
     "typescript": "5.2.2",
-    "vite": "5.4.15"
+    "vite": "7.1.11"
   }
 }
